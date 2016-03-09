@@ -1,0 +1,6 @@
+[submodule "libs/wolfssl"]
+	path = libs/wolfssl
+	url = git@github.com:ubirch/wolfssl.git
+[submodule "libs/firmware"]
+	path = libs/firmware
+	url = git@github.com:ubirch/firmware.git
