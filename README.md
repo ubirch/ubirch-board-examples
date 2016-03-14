@@ -6,6 +6,66 @@ The K82F chip documentation can be found here:
 All other documentation and examples can be obtained from the [Kinetis SDK 2.0](http://kex.freescale.com/en/).
 You will need to select the chip and minimal features before downloading.
 
+## Running, flashing and debugging
+
+Install the arm toolchain gcc:
+```
+brew install gcc-arm-none-eabi-49
+```
+
+Also download the [SEGGER J-Link Debugger](https://www.segger.com/jlink-software.html) for the JLinkGDBServer.
+
+Connect the J-Link via USB, also connect the Cortex-M debug ribbon cable to the board.
+Power the board using USB or a battery. Connect a USB-UART adapter RX/TX to the corresponding UART pins on board (see next section).
+
+### 1. Start the GDB Server:
+
+```
+JLinkGDBServer  -if SWD -device MK82FN256xxx15 -port 2331
+```
+
+### 2. Start the serial debug console
+
+```
+screen /dev/cu.SLAB-to-UART 115200
+```
+
+> Use another device (i.e. ```/dev/cu.usbmodem1243```) if you have a different adapter.
+
+### 3. Start the debugger (gdb)
+
+I recommend [cgdb](https://cgdb.github.io/) (install via ```brew install cgdb```) as it is somewhat easier to see where you currently are in your code.
+
+For flashing and debugging cd into the corresponding sub-directory:
+```
+cd src/test
+cgdb -d arm-none-eabi-gdb test.elf
+```
+
+Issue the following commands in cgdb, which will flash the code on the board:
+
+```
+load test.elf
+```
+
+Then just enter ```c``` to start the program
+
+### 4. DEBUG!
+
+To stop a running program in the debugger, just press ```Ctrl-C``` and set a breakpoint:
+
+```
+break main
+r
+```
+
+```r``` restarts the code (you will have to confirm) and break at the start of ```main()```
+After subsequent ```load test.elf``` commands you do not need to restart as the debugger will
+restart the MCU itself. Just issue ```c``` to continue. Unless you leave the debugger the breakpoints
+are still there.
+
+
+
 ## Examples
 
 Debug console output can be found on pins 6 (RX) and 7 (TX). If the SIM800H chip is on the bottom right
