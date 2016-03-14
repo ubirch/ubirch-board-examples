@@ -3,7 +3,7 @@
 The K82F chip documentation can be found here:
 [K82 Sub-Family Reference Manual](http://cache.nxp.com/files/32bit/doc/ref_manual/K82P121M150SF5RM.pdf)
 
-All other documentation and examples can be obtained from the []Kinetis SDK 2.0](http://kex.freescale.com/en/).
+All other documentation and examples can be obtained from the [Kinetis SDK 2.0](http://kex.freescale.com/en/).
 You will need to select the chip and minimal features before downloading.
 
 ## Examples
