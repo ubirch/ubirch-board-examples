@@ -11,12 +11,11 @@
 #include <drivers/fsl_trng.h>
 #include <wolfssl/wolfcrypt/rsa.h>
 #include <wolfssl/wolfcrypt/signature.h>
-#include "board_key.h"
 #include "public_key.h"
 
-const byte message[] = "We love things.\n0a1b2c3d4e5f6g7h8i9j-UBIRCH\n";
+const byte plaintext[] = "We love things.\n0a1b2c3d4e5f6g7h8i9j-UBIRCH\n";
 
-void to_hex(const byte *out, int len) {
+void print_buffer_hex(const byte *out, int len) {
   for (int i = 0; i < len; i++) {
     PRINTF("%02x", out[i]);
   }
@@ -29,71 +28,84 @@ void SysTick_Handler() {
   LED_Write((counter % 100) < 10);
 }
 
+void print_public_key(RsaKey *key) {
+  byte encoded_key[294];
+  wc_RsaKeyToPublicDer(key, encoded_key, 2048);
+  print_buffer_hex(encoded_key, sizeof(encoded_key));
+}
+
+void error(char *message) {
+  PRINTF("] ERROR: %s\r\n", message);
+  while (true);
+}
+
+WC_RNG rng;
+RsaKey board_rsa_key;
+RsaKey recipient_public_key;
+
+int init_trng() {
+  PRINTF("- initializing random number generator\r\n");
+  trng_config_t trngConfig;
+  TRNG_GetDefaultConfig(&trngConfig);
+  trngConfig.sampleMode = kTRNG_SampleModeVonNeumann;
+  int r = TRNG_Init(TRNG0, &trngConfig);
+  return r == kStatus_Success ? wc_InitRng(&rng) : r;
+}
+
+int init_board_key(unsigned int size) {
+  PRINTF("- generating board private key (please wait)\r\n");
+  wc_InitRsaKey(&board_rsa_key, NULL);
+  int r = wc_MakeRsaKey(&board_rsa_key, 2048, 65537, &rng);
+  if(r != 0) return r;
+  PRINTF("-- BOARD PUBLIC KEY\r\n");
+  print_public_key(&board_rsa_key);
+  return 0;
+}
+
+
+int init_recipient_public_key(byte *key, size_t length) {
+  PRINTF("- loading recipient public key\r\n");
+  word32 idx = 0;
+  wc_InitRsaKey(&recipient_public_key, NULL); // not using heap hint. No custom memory
+  return wc_RsaPublicKeyDecode(key, &idx, &recipient_public_key, length);
+}
+
 int main(void) {
   BOARD_Init();
   SysTick_Config(SystemCoreClock / 100 - 1);
 
-  trng_config_t trngConfig;
-  TRNG_GetDefaultConfig(&trngConfig);
-  trngConfig.sampleMode = kTRNG_SampleModeVonNeumann;
-  if (TRNG_Init(TRNG0, &trngConfig) == kStatus_Success) {
-    WC_RNG rng;
+  PRINTF("ubirch #2 RSA encryption/signature test\r\n");
+  if (init_trng() != 0) error("failed to initialize TRNG");
+  if (init_board_key(2048) != 0) error("failed to generate key pair");
+  if (init_recipient_public_key(test_der, test_der_len)) error("failed to load recipient public key");
 
-    PRINTF("ubirch #2 RSA encryption/signature test\r\n");
+  byte cipher[256]; // 256 bytes is large enough to store 2048 bit RSA ciphertext
+  word32 plaintextLength = sizeof(plaintext);
+  word32 cipherLength = sizeof(cipher);
 
-    if (wc_InitRng(&rng) == 0) {
-      PRINTF("- loading board private key\r\n");
+  PRINTF("- signing message with board private key\r\n");
+  int signatureLength = wc_SignatureGetSize(WC_SIGNATURE_TYPE_RSA, &board_rsa_key, sizeof(board_rsa_key));
+  byte *signature = malloc((size_t) signatureLength);
 
-      RsaKey board_priv_key;
-      word32 idx = 0;
-      wc_InitRsaKey(&board_priv_key, NULL); // not using heap hint. No custom memory
-      int r;
-      if ((r = wc_RsaPrivateKeyDecode(board_der, &idx, &board_priv_key, board_der_len)) == 0) {
-        PRINTF("- loading recipient public key\r\n");
+  if (wc_SignatureGenerate(
+    WC_HASH_TYPE_SHA256, WC_SIGNATURE_TYPE_RSA,
+    plaintext, plaintextLength,
+    signature, (word32 *) &signatureLength,
+    &board_rsa_key, sizeof(board_rsa_key),
+    &rng) != 0)
+    error("failed to sign plain text message");
+  PRINTF("-- SIGNATURE\r\n");
+  print_buffer_hex(signature, signatureLength);
 
-        idx = 0;
-        RsaKey ext_pub_key;
-        wc_InitRsaKey(&ext_pub_key, NULL); // not using heap hint. No custom memory
-        if ((r = wc_RsaPublicKeyDecode(test_der, &idx, &ext_pub_key, test_der_len)) == 0) {
-          PRINTF("- encrypting message\r\n");
+  PRINTF("- encrypting message\r\n");
+  int r = wc_RsaPublicEncrypt(plaintext, plaintextLength, cipher, cipherLength, &recipient_public_key, &rng);
+  if(r < 0) error("failed to encrypt message");
 
-          byte encr[256]; // 256 bytes is large enough to store 2048 bit RSA ciphertext
-          word32 inLen = sizeof(message);
-          word32 outLen = sizeof(encr);
+  PRINTF("-- CIPHER (%d bytes)\r\n", r);
+  print_buffer_hex(cipher, r);
 
-          int encRet = wc_RsaPublicEncrypt(message, inLen, encr, outLen, &ext_pub_key, &rng);
-
-          PRINTF("- signing message with board private key\r\n");
-
-          int sigLen = wc_SignatureGetSize(WC_SIGNATURE_TYPE_RSA, &board_priv_key, sizeof(board_priv_key));
-          byte *sigBuf = malloc((size_t) sigLen);
-
-          int sigRet = wc_SignatureGenerate(
-            WC_HASH_TYPE_SHA256, WC_SIGNATURE_TYPE_RSA,
-            message, (word32) inLen,
-            sigBuf, (word32 *) &sigLen,
-            &board_priv_key, sizeof(board_priv_key),
-            &rng);
-
-          PRINTF("-- CIPHER (%d)\r\n", encRet);
-          to_hex(encr, encRet);
-          PRINTF("-- SIGNATURE (%d)\r\n", sigRet);
-          to_hex(sigBuf, sigLen);
-
-        } else {
-          PRINTF("RSA public key loading failed: %d\r\n", r);
-        }
-        wc_FreeRsaKey(&ext_pub_key);
-      } else {
-        PRINTF("RSA private key loading failed: %d\r\n", r);
-      }
-      wc_FreeRsaKey(&board_priv_key);
-    } else {
-      PRINTF("RNG init failed\r\n");
-    }
-  } else {
-    PRINTF("TRNG init failed\r\n");
-  }
+  wc_FreeRsaKey(&board_rsa_key);
+  wc_FreeRsaKey(&recipient_public_key);
 
   PRINTF("THE END\r\n");
   while (true) {
