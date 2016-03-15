@@ -55,7 +55,7 @@ int init_trng() {
 int init_board_key(unsigned int size) {
   PRINTF("- generating board private key (please wait)\r\n");
   wc_InitRsaKey(&board_rsa_key, NULL);
-  int r = wc_MakeRsaKey(&board_rsa_key, 2048, 65537, &rng);
+  int r = wc_MakeRsaKey(&board_rsa_key, size, 65537, &rng);
   if(r != 0) return r;
   PRINTF("-- BOARD PUBLIC KEY\r\n");
   print_public_key(&board_rsa_key);
