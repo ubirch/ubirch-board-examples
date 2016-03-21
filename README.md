@@ -1,4 +1,4 @@
-# ubirch #2 board internal playground
+# ubirch #1 (r0.2.0) board internal playground
 
 ## Code checkout:
 
