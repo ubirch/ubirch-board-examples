@@ -19,3 +19,5 @@ add_subdirectory(src/test)
 add_subdirectory(src/lpuart)
 add_subdirectory(src/rtc)
 add_subdirectory(src/wolfssl-test)
+
+add_subdirectory(src/sim800h)
