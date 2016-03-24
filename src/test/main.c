@@ -19,7 +19,7 @@ void SysTick_Handler() {
 
 int main(void) {
   BOARD_Init();
-  SysTick_Config(DEFAULT_SYSTICK_10MS);
+  SysTick_Config(RUN_SYSTICK_10MS);
 
   PRINTF("WELCOME!\r\n");
   while(true) {
