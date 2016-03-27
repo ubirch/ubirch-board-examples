@@ -21,4 +21,5 @@ add_subdirectory(src/rtc)
 add_subdirectory(src/wolfssl-test)
 
 add_subdirectory(src/sim800h)
+add_subdirectory(src/i2c_scan)
 add_subdirectory(src/isl29125)
