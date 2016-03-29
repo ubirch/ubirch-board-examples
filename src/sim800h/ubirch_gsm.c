@@ -6,9 +6,9 @@ void gsm_power_enable() {
   GPIO_PinInit(GSM_PWR_EN_GPIO, GSM_PWR_EN_PIN, &OUTFALSE);
   GPIO_WritePinOutput(GSM_PWR_EN_GPIO, GSM_PWR_EN_PIN, true);
 
-  uint16_t cnt = 0, bat;
+  uint16_t bat;
   while((bat = VBat_Read()) < 2000) {
-    if (cnt++ % 10000 == 0) PRINTF("%d\r\n", bat); else PRINTF(".");
+    PRINTF("%d\r", bat);
   }
   PRINTF("%d\r\n", bat);
 }
@@ -41,24 +41,16 @@ void gsm_enable() {
 
   lpuart_config_t lpuart_config;
   LPUART_GetDefaultConfig(&lpuart_config);
-  lpuart_config.baudRate_Bps = GSM_UART_BAUD;
+  lpuart_config.baudRate_Bps = 115200;
   lpuart_config.parityMode = kLPUART_ParityDisabled;
   lpuart_config.stopBitCount = kLPUART_OneStopBit;
   LPUART_Init(GSM_UART, &lpuart_config, LPUART_BASE_CLOCK);
   LPUART_EnableRx(GSM_UART, true);
   LPUART_EnableTx(GSM_UART, true);
 
-  unsigned int cnt = 0;
-  do {
-    GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, true);
-    BusyWait100us(100); //10ms
-    GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, false);
-    BusyWait100us(11000); // 1.1s
-    GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, true);
-    BusyWait100us(20000);
-
-    if (cnt++ % 10000 == 0) PRINTF(".");
-  } while (!GPIO_ReadPinInput(GSM_GPIO, GSM_STATUS_PIN) == 0);
-  // wait for SIM800 to come up
-  PRINTF("\r\n");
+  GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, true);
+  BusyWait100us(100); //10ms
+  GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, false);
+  BusyWait100us(11000); // 1.1s
+  GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, true);
 }

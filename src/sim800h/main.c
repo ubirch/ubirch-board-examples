@@ -1,8 +1,6 @@
-/*! Blink - simplistic app. Blinks LED, reverses blink pattern on button press.
- * Written by Matthias Krauss
- * Copyright 2016 Press Every Key UG
+/**
+ * Simple SIM800 GSM Modem Console.
  */
-
 
 #include <stdint.h>
 #include <stdbool.h>
