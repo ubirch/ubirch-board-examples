@@ -32,7 +32,7 @@ int main(void) {
   PRINTF("] ");
   while (true) {
     uint8_t ch = GETCHAR();
-    if (ch == '\r') {
+    if (ch == '\r' || ch == '\n') {
       PUTCHAR('\r');
       PUTCHAR('\n');
       LPUART_WriteBlocking(GSM_UART, buffer, idx);
