@@ -26,12 +26,9 @@ int main(void) {
   PORT_SetPinMux(PORTB, 10, kPORT_MuxAlt4);
   PORT_SetPinMux(PORTB, 11, kPORT_MuxAlt4);
 
-  // initialize I2C
+  // configure I2C
   i2c_master_transfer_t master_transfer;
   i2c_master_config_t i2c_config;
-  I2C_MasterGetDefaultConfig(&i2c_config);
-
-  // configure I2C
   I2C_MasterGetDefaultConfig(&i2c_config);
   i2c_config.baudRate_Bps = 400000U;
   I2C_MasterInit(I2C2, &i2c_config, CLOCK_GetFreq(kCLOCK_BusClk));
