@@ -110,14 +110,14 @@ typedef struct RGB48 {
     uint16_t red;
     uint16_t green;
     uint16_t blue;
-} rgb48;
+} rgb48_t;
 
 // 24 bit color value (downsampled)
 typedef struct RGB24 {
     uint8_t red;
     uint8_t green;
     uint8_t blue;
-} rgb24;
+} rgb24_t;
 
 /**
  * Set up a value in a register on the sensor.
@@ -144,11 +144,6 @@ uint16_t isl_read_green(void);
 
 uint16_t isl_read_blue(void);
 
-/**
- * Read full 48 bit color from sensor
- */
-rgb48 isl_read_rgb(void);
-
 uint8_t isl_read_red8(void);
 
 uint8_t isl_read_green8(void);
@@ -156,10 +151,15 @@ uint8_t isl_read_green8(void);
 uint8_t isl_read_blue8(void);
 
 /**
+ * Read full 48 bit color from sensor
+ */
+void isl_read_rgb48(rgb48_t *rgb48);
+
+/**
  * Read sensor data as 24 bit RGB
  * @param gamma the gamma adjustment >= 1
  */
-rgb24 isl_read_rgb24(void);
+void isl_read_rgb24(rgb24_t *rgb24);
 
 
 
