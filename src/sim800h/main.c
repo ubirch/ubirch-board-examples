@@ -21,15 +21,17 @@ int main(void) {
   BOARD_Init();
   SysTick_Config(RUN_SYSTICK_10MS);
 
-  gsm_power_enable();
+  // prepare GSM module
   gsm_enable();
-
   LPUART_EnableInterrupts(GSM_UART, kLPUART_RxDataRegFullInterruptEnable);
   EnableIRQ(GSM_UART_IRQ);
 
+  // power on GSM module
+  gsm_power_enable();
+
+
   uint8_t buffer[128], idx = 0, newline[2] = {'\r', '\n' };
 
-  PRINTF("] ");
   while (true) {
     uint8_t ch = GETCHAR();
     if (ch == '\r' || ch == '\n') {
@@ -38,7 +40,6 @@ int main(void) {
       LPUART_WriteBlocking(GSM_UART, buffer, idx);
       LPUART_WriteBlocking(GSM_UART, newline, 2);
       idx = 0;
-      PRINTF("] ");
     } else {
       PUTCHAR(ch);
       buffer[idx++] = ch;
