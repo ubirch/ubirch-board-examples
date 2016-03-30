@@ -1,5 +1,5 @@
 # ADD_EXECUTABLE
-ADD_EXECUTABLE(i2c_scan main.c)
+ADD_EXECUTABLE(i2c_scan main.c ../libs/i2c/i2c_core.c)
 
 SET_TARGET_PROPERTIES(i2c_scan PROPERTIES OUTPUT_NAME "i2c_scan.elf")
 

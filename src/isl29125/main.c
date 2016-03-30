@@ -5,6 +5,7 @@
 #include <extpin.h>
 #include <drivers/fsl_lpuart.h>
 #include "isl29125.h"
+#include "../libs/i2c/i2c_core.h"
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
@@ -18,15 +19,7 @@ int main(void) {
   SysTick_Config(RUN_SYSTICK_10MS);
   PRINTF("\r\n-- ISL29125 test\r\n");
 
-  CLOCK_EnableClock(kCLOCK_PortB);
-  PORT_SetPinMux(PORTB, 10, kPORT_MuxAlt4);
-  PORT_SetPinMux(PORTB, 11, kPORT_MuxAlt4);
-
-  // configure I2C
-  i2c_master_config_t i2c_config;
-  I2C_MasterGetDefaultConfig(&i2c_config);
-  i2c_config.baudRate_Bps = 100000U;
-  I2C_MasterInit(I2C2, &i2c_config, CLOCK_GetFreq(kCLOCK_BusClk));
+  i2c_init(400000U);
 
   if (!isl_reset()) {
     PRINTF("could not initialize ISL29125 RGB sensor\r\n");
