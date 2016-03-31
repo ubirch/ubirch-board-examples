@@ -40,8 +40,8 @@ void oled_cmd(uint8_t address, uint8_t command) {
 }
 
 
-void oled_data(uint8_t address, uint8_t data) {
-  i2c_write_reg(address, 0x40, &data, 1);
+void oled_data(uint8_t address, uint8_t *data, size_t size) {
+  i2c_write_reg(address, 0x40, data, size);
 }
 
 //== higher level functions ================================
@@ -56,7 +56,7 @@ void oled_clear(uint8_t address) {
   oled_cmd(address, 7);
 
   uint8_t cleared_buffer[128];
-  memset(cleared_buffer, 0, 128);
+  memset(cleared_buffer, 0xff, 128);
   for (uint8_t page = 0; page < 8; page++) {
     oled_cmd(address, (uint8_t) 0xb0 | page);
     oled_cmd(address, 0x00);

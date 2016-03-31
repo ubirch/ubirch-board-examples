@@ -24,15 +24,29 @@ ln -sf $KSDKDIR SDK_2.0_MK82FN256xxx15
 
 ## Running, flashing and debugging
 
-Install the arm toolchain gcc:
+Install the arm toolchain gcc and cmake:
 ```
-brew install gcc-arm-none-eabi-49
+brew install gcc-arm-none-eabi-49 cmake
 ```
 
 Also download the [SEGGER J-Link Debugger](https://www.segger.com/jlink-software.html) for the JLinkGDBServer.
 
 Connect the J-Link via USB, also connect the Cortex-M debug ribbon cable to the board.
 Power the board using USB or a battery. Connect a USB-UART adapter RX/TX to the corresponding UART pins on board (see next section).
+
+> *TODO:* Fix the toolchain, using the
+> [ARM mbed toolchain](https://github.com/ARMmbed/target-mbed-gcc/blob/master/CMake/toolchain.cmake) as a start.
+> Currently, the toolchain only works partially, not applying the correct exe and linker flags.
+
+Compile the code by running the following commands:
+
+```
+cd $SRCDIR
+mkdir build
+cd build
+cmake ..; cmake .. # yes, twice due to a toolchain issue as noted above
+make
+```
 
 ### 1. Start the GDB Server:
 

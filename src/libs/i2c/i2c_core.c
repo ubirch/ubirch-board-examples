@@ -4,7 +4,7 @@
 
 #include "i2c_core.h"
 
-void i2c_init(uint32_t speed) {
+void i2c_init(i2c_speed_t speed) {
   CLOCK_EnableClock(kCLOCK_PortB);
   PORT_SetPinMux(PORTB, 10, kPORT_MuxAlt4);
   PORT_SetPinMux(PORTB, 11, kPORT_MuxAlt4);
@@ -13,12 +13,18 @@ void i2c_init(uint32_t speed) {
   i2c_master_config_t i2c_config;
   I2C_MasterGetDefaultConfig(&i2c_config);
   i2c_config.baudRate_Bps = speed;
-  return I2C_MasterInit(I2C2, &i2c_config, CLOCK_GetFreq(kCLOCK_BusClk));
+  I2C_MasterInit(I2C2, &i2c_config, CLOCK_GetFreq(kCLOCK_BusClk));
+}
+
+void i2c_deinit() {
+  I2C_MasterDeinit(I2C2);
+  CLOCK_DisableClock(kCLOCK_PortB);
 }
 
 status_t i2c_ping(uint8_t address) {
   i2c_master_transfer_t transfer;
   memset(&transfer, 0, sizeof(transfer));
+
   transfer.slaveAddress = address;
   transfer.direction = kI2C_Write;
   transfer.flags = kI2C_TransferDefaultFlag;
@@ -30,6 +36,7 @@ status_t i2c_ping(uint8_t address) {
 status_t i2c_write_reg(uint8_t address, uint8_t reg, uint8_t *data, size_t size) {
   i2c_master_transfer_t transfer;
   memset(&transfer, 0, sizeof(transfer));
+
   transfer.slaveAddress = address;
   transfer.direction = kI2C_Write;
   transfer.subaddress = reg;
@@ -49,9 +56,11 @@ status_t i2c_write_reg(uint8_t address, uint8_t reg, uint8_t *data, size_t size)
 }
 
 uint8_t i2c_read_reg(uint8_t address, uint8_t reg) {
-  static uint8_t data = 0;
+
   i2c_master_transfer_t transfer;
   memset(&transfer, 0, sizeof(transfer));
+
+  static uint8_t data = 0;
   transfer.slaveAddress = address;
   transfer.direction = kI2C_Read;
   transfer.subaddress = reg;
@@ -68,9 +77,11 @@ uint8_t i2c_read_reg(uint8_t address, uint8_t reg) {
 }
 
 uint16_t i2c_read_reg16(uint8_t address, uint8_t reg) {
-  static uint8_t data[2] = {0, 0};
+
   i2c_master_transfer_t transfer;
   memset(&transfer, 0, sizeof(transfer));
+
+  static uint8_t data[2] = {0, 0};
   transfer.slaveAddress = address;
   transfer.direction = kI2C_Read;
   transfer.subaddress = reg;

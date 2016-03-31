@@ -27,6 +27,8 @@
 
 // =================================
 #define OLED_ADDRESSING_MODE    0x20
+#define OLED_COLUMN_ADDRESS     0x21
+#define OLED_PAGE_ADDRESS       0x22
 
 #define OLED_ADDR_MODE_PAGE     0b10
 #define OLED_ADDR_MODE_HORIZ    0b00
@@ -95,7 +97,7 @@ void oled_cmd(uint8_t address, uint8_t command);
  * @param address the controller i2c address
  * @param data the data byte
  */
-void oled_data(uint8_t address, uint8_t data);
+void oled_data(uint8_t address, uint8_t *data, size_t size);
 
 /**
  * Clear the display.

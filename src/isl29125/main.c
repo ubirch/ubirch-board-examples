@@ -19,7 +19,7 @@ int main(void) {
   SysTick_Config(RUN_SYSTICK_10MS);
   PRINTF("\r\n-- ISL29125 test\r\n");
 
-  i2c_init(400000U);
+  i2c_init(I2C_FULL_SPEED);
 
   if (!isl_reset()) {
     PRINTF("could not initialize ISL29125 RGB sensor\r\n");

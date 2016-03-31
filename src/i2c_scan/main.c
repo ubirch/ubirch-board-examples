@@ -17,7 +17,7 @@ int main(void) {
   BOARD_Init();
   SysTick_Config(RUN_SYSTICK_10MS);
 
-  i2c_init(400000U);
+  i2c_init(I2C_FULL_SPEED);
 
   // Do a transfer and stop for each of the addresses possible
   // output found device addresses or errors
@@ -50,7 +50,7 @@ int main(void) {
     }
   }
 
-  I2C_MasterDeinit(I2C2);
+  i2c_deinit();
 
   PRINTF("\e[KScanning done.\r\n");
 

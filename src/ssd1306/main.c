@@ -6,6 +6,9 @@
 #include <drivers/fsl_lpuart.h>
 #include "ssd1306.h"
 #include "../libs/i2c/i2c_core.h"
+#include "font5x5.h"
+
+void invert_char(uint8_t *buffer, uint8_t r, uint8_t c);
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
@@ -25,13 +28,14 @@ int main(void) {
   BusyWait100us(1000);
 
   // initialize i2c
-  i2c_init(400000U);
+  i2c_init(I2C_FAST_MODE);
   const status_t status = i2c_ping(OLED_DEVICE_ADDRESS);
-  if(status == kStatus_Success) {
+  if (status == kStatus_Success) {
     PRINTF("OLED device found!\r\n");
   } else {
     i2c_error("OLED device not found", status);
   };
+
 
   // software configuration according to specs
   oled_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_OFF);
@@ -58,119 +62,99 @@ int main(void) {
   oled_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_NORMAL);
 
   oled_cmd(OLED_DEVICE_ADDRESS, OLED_ADDRESSING_MODE);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_ADDR_MODE_PAGE);
+  oled_cmd(OLED_DEVICE_ADDRESS, OLED_ADDR_MODE_HORIZ);
 
   oled_clear(OLED_DEVICE_ADDRESS);
 
   oled_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_ON);
 
-  oled_clear(OLED_DEVICE_ADDRESS);
+  // set the display constraints
+  oled_cmd(OLED_DEVICE_ADDRESS, OLED_PAGE_ADDRESS);
+  oled_cmd(OLED_DEVICE_ADDRESS, 0x00);
+  oled_cmd(OLED_DEVICE_ADDRESS, 0x05);
 
-//  // print the ABC character set (what fits) onto the display line 5
-//  oled_cmd(OLED_DEVICE_ADDRESS, OLED_PAGE_ADDR_START | 4);
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0x00);
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0x00);
+  oled_cmd(OLED_DEVICE_ADDRESS, OLED_COLUMN_ADDRESS);
+  oled_cmd(OLED_DEVICE_ADDRESS, 0x20);
+  oled_cmd(OLED_DEVICE_ADDRESS, 0x20 + 63);
 
-//  i2c_start();
-//  i2c_write(OLED_DEVICE_ADDRESS << 1);
-//  i2c_assert(I2C_STATUS_SLAW_ACK, "address error");
-//  i2c_write(0x40);
-//  i2c_assert(I2C_STATUS_DATA_ACK, "reg error");
-//  for (uint8_t i = 0; i < 128 - (128 / 6) - 1; i++) {
-//    if (i % 5 == 0) i2c_write(0);
-//    i2c_write(font5x5_abc[i]);
-//  }
+  uint8_t buffer[64 * 6];
+  memset(buffer, 0x00, 64 * 6);
+
+  for (uint8_t c = 0; c < 26; c++) {
+    memcpy(buffer + c * 8+1, font5x5_abc + c * 5, 5);
+  }
+
+  while (true) {
+    for (int r = 0; r < 6; r++) {
+      for (int c = 0; c < 8; c++) {
+        // invert a character spot, like a cursor
+        invert_char(buffer, r, c);
+
+        // send to device
+        oled_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
+        BusyWait100us(1000);
+      }
+    }
+  }
+
+  PRINTF("DONE\r\n");
   return 0;
-
 }
 
+void invert_char(uint8_t *buffer, uint8_t r, uint8_t c) {
+  // keep last cursor position
+  static uint8_t cr = 0xff, cc;
+  if(cr != 0xff) for (int b = 0; b < 7; b++) buffer[cr * 64 + cc * 8 + b] = ~buffer[cr * 64 + cc * 8 + b];
+  cr = r;
+  cc = c;
+  for (int b = 0; b < 7; b++) buffer[cr * 64 + cc * 8 + b] = ~buffer[cr * 64 + cc * 8 + b];
+}
 
-//
-//  // print the extra character set (what fits) onto the display line 6
-//  oled_cmd(OLED_DEVICE_ADDRESS, OLED_PAGE_ADDR_START | 5);
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0x00);
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0x00);
-//
-//  i2c_start();
-//  i2c_write(OLED_DEVICE_ADDRESS << 1);
-//  i2c_assert(I2C_STATUS_SLAW_ACK, "address error");
-//  i2c_write(0x40);
-//  i2c_assert(I2C_STATUS_DATA_ACK, "reg error");
-//  for (uint8_t i = 0; i < 128 - (128 / 6) - 1; i++) {
-//    if (i % 5 == 0) i2c_write(0);
-//    i2c_write(font5x5_extra[i]);
-//  }
-//
-//  // configure scrolling of both lines 5 and 6
-//  oled_cmd(OLED_DEVICE_ADDRESS, OLED_SCROLL_LEFT);
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0x00000000); // A dummy
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0b00000100); // B start page
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0b00000101); // C speed
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0b00000111); // D end page
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0b00000000); // E dummy
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0b11111111); // F dummy
-//  oled_cmd(OLED_DEVICE_ADDRESS, OLED_SCROLL_START);
-//
-//  // set drawing area (rows and pages)
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0x21);
-//  oled_cmd(OLED_DEVICE_ADDRESS, 32);
-//  oled_cmd(OLED_DEVICE_ADDRESS, 64 + 32 - 1);
-//
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0x22);
-//  oled_cmd(OLED_DEVICE_ADDRESS, 0);
-//  oled_cmd(OLED_DEVICE_ADDRESS, 48 / 8 - 1);
-//
-//
-//  rgb24 rgb_cache = {.red=0, .green=0, .blue=0};
-//  while (true) {
-//    while (!(isl_get(ISL_R_STATUS) & ISL_STATUS_ADC_DONE)) continue;
-//
-//    // read RGB values, convert the 0-255 into 0-64
-//    rgb24 rgb = isl_read_rgb24();
-//    // check if there was a change
-//    if (rgb_cache.red == rgb.red && rgb_cache.green == rgb.green && rgb_cache.blue == rgb.blue) {
-//      _delay_ms(100);
-//      continue;
-//    }
-//    rgb_cache.red = rgb.red;
-//    rgb_cache.green = rgb.green;
-//    rgb_cache.blue = rgb.blue;
-//
-//    rgb48 rgbx = isl_read_rgb();
-//    uint8_t colors[6] = {
-//      rgb.red / 2,
-//      rgb.green / 2,
-//      rgb.blue / 2,
-//    };
-//    DBG_MSG("RGB48: %04x%04x%04x\n", rgbx.red, rgbx.green, rgbx.blue);
-//    DBG_MSG("RGB24: %02x%02x%02x\n", rgb.red, rgb.green, rgb.blue);
-//
-//
-//    // visualize the RGB levels using three gauges (stop scrolling to avoid picture erosion)
-//    for (uint8_t page = 0; page < 3; page += 1) {
-//      oled_cmd(OLED_DEVICE_ADDRESS, OLED_SCROLL_STOP);
-//      oled_cmd(OLED_DEVICE_ADDRESS, OLED_PAGE_ADDR_START | page);
-//      oled_cmd(OLED_DEVICE_ADDRESS, 0x12);
-//      oled_cmd(OLED_DEVICE_ADDRESS, 0x00);
-//
-//      i2c_start();
-//      i2c_write(OLED_DEVICE_ADDRESS << 1);
-//      i2c_assert(I2C_STATUS_SLAW_ACK, "address error");
-//      i2c_write(0x40);
-//      i2c_assert(I2C_STATUS_DATA_ACK, "reg error");
-//      i2c_write(0b01111110);
-//      for (uint8_t column = 1; column < 63; column++) {
-//        if (colors[page] < column) i2c_write(0b01000010);
-//        else i2c_write(0b01011010);
-//        i2c_assert(I2C_STATUS_DATA_ACK, "address error");
-//      }
-//      i2c_write(0b01111110);
-//      i2c_stop();
-//
-//      // now we can scroll again, we are waiting some time anyway
-//      oled_cmd(OLED_DEVICE_ADDRESS, OLED_SCROLL_START);
-//
-//      _delay_ms(100);
-//    }
-//  }
-//}
+/*
+ * byte[] display = new byte[504];
+
+// storing these means they don't need to be calculated every time:
+byte[] base2 = { 1, 2, 4, 8, 16, 32, 64, 128 };
+
+// Determine if the pixel is ON (true) or OFF (false)
+public bool PixelState(Pixel px)
+{
+    return (display[GetColumn(px)] & base2[GetPxNum(px)]) > 0;
+}
+
+// Find the number of the pixel in its column of 8
+private int GetPxNum(Pixel px)
+{
+    return px.y % 8;
+}
+
+// Find the index of the byte containing the bit representing the state of a pixel
+private int GetColumn(Pixel px)
+{
+    return (px.y / 8 * 84) + px.x;
+}
+
+// Set a pixel's state
+public void SetPixel(Pixel px, bool state)
+{
+    int col = GetColumn(px);
+    int num = GetPxNum(px);
+
+    if (state && !PixelState(px))
+        display[col] += base2[num];
+    else if (!state && PixelState(px))
+        display[col] -= base2[num];
+}
+
+// Represents one (x,y) point
+public struct Pixel
+{
+    public int x, y;
+
+    public Pixel(int x, int y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+}
+ */

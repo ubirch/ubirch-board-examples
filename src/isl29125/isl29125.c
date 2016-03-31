@@ -48,7 +48,7 @@ uint8_t isl_reset(void) {
   if (device_id != ISL_DEVICE_ID) return 0;
 
   // reset and make sure we are actually done resetting
-  uint8_t reset = ISL_R_RESET;
+  uint8_t reset = ISL_RESET;
   status_t status = i2c_write_reg(ISL_DEVICE_ADDRESS, 0x00, &reset, 1);
   I2C_MasterStop(I2C2);
 

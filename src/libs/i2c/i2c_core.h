@@ -3,7 +3,20 @@
 
 #include <drivers/fsl_common.h>
 
-void i2c_init(uint32_t speed);
+typedef enum i2c_speed {
+    I2C_STANDARD   =  100000U, // 100kHz
+    I2C_FULL_SPEED =  400000U, // 400kHz
+    I2C_FAST_MODE  = 1000000U, //   1MHz
+    I2C_HIGH_SPEED = 3400000U  // 3.4MHz
+} i2c_speed_t;
+
+/**
+ * Initialize I2C2 with a specific speed.
+ * @param speed
+ */
+void i2c_init(i2c_speed_t speed);
+
+void i2c_deinit();
 
 status_t i2c_ping(uint8_t address);
 

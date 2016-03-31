@@ -53,7 +53,7 @@
 #define ISL_R_BLUE_H        0x0E
 
 // reset command
-#define ISL_R_RESET         0x46
+#define ISL_RESET           0x46
 
 #define ISL_SAMPLE_GAMMA_0  1.0
 #define ISL_SAMPLE_GAMMA_1  2.2
