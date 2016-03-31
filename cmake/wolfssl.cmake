@@ -14,6 +14,7 @@ else ()
   include_directories(${WOLFSSL_ROOT})
 
   file(GLOB WOLFSSL_SRCS ${WOLFSSL_ROOT}/wolfcrypt/src/*.c)
+  list(REMOVE_ITEM WOLFSSL_SRCS ${WOLFSSL_ROOT}/wolfcrypt/src/misc.c)
 
   add_library(wolfcrypt STATIC ${WOLFSSL_SRCS})
   target_compile_definitions(wolfcrypt PUBLIC ${WOLFSSL_DEFINITIONS})

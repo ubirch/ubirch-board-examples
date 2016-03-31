@@ -1,10 +1,7 @@
 #include <stdint.h>
-#include <stdbool.h>
 #include <board.h>
 #include <stdio.h>
 #include <extpin.h>
-#include <drivers/fsl_lpuart.h>
-#include <stdarg.h>
 #include <ctype.h>
 #include "ssd1306.h"
 #include "../libs/i2c/i2c_core.h"
