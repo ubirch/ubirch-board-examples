@@ -4,11 +4,15 @@
 #include <stdio.h>
 #include <extpin.h>
 #include <drivers/fsl_lpuart.h>
+#include <stdarg.h>
+#include <ctype.h>
 #include "ssd1306.h"
 #include "../libs/i2c/i2c_core.h"
 #include "font5x5.h"
 
-void invert_char(uint8_t *buffer, uint8_t r, uint8_t c);
+void oled_invert(int row, int column);
+
+void oled_puts(int row, int column, char *s) ;
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
@@ -16,6 +20,7 @@ void SysTick_Handler() {
   LED_Write((counter % 100) < 10);
 }
 
+uint8_t buffer[64 * 6];
 
 int main(void) {
   BOARD_Init();
@@ -77,35 +82,42 @@ int main(void) {
   oled_cmd(OLED_DEVICE_ADDRESS, 0x20);
   oled_cmd(OLED_DEVICE_ADDRESS, 0x20 + 63);
 
-  uint8_t buffer[64 * 6];
   memset(buffer, 0x00, 64 * 6);
+  oled_data(OLED_DEVICE_ADDRESS, buffer, 64*6);
 
-  for (uint8_t c = 0; c < 26; c++) {
-    memcpy(buffer + c * 8+1, font5x5_abc + c * 5, 5);
-  }
+  int row = 0, column = 0;
+  oled_invert(row, column);
 
-  while (true) {
-    for (int r = 0; r < 6; r++) {
-      for (int c = 0; c < 8; c++) {
-        // invert a character spot, like a cursor
-        invert_char(buffer, r, c);
-
-        // send to device
-        oled_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
-        BusyWait100us(1000);
-      }
+  char c[8];
+  c[1] = 0;
+  do {
+    c[0] = (uint8_t) toupper(GETCHAR());
+    oled_invert(row, column);
+    if(c[0] != ' ') oled_puts(row, column, c);
+    if(column++ > 7) {
+      column = 0;
+      row++;
     }
-  }
+    if(row > 5) row = 0;
+    oled_invert(row, column);
+  } while(c[0] != '\r');
 
   PRINTF("DONE\r\n");
   return 0;
 }
 
-void invert_char(uint8_t *buffer, uint8_t r, uint8_t c) {
-  // keep last cursor position
-  static uint8_t cr = 0xff, cc;
-  if(cr != 0xff) for (int b = 0; b < 7; b++) buffer[cr * 64 + cc * 8 + b] = ~buffer[cr * 64 + cc * 8 + b];
-  cr = r;
-  cc = c;
-  for (int b = 0; b < 7; b++) buffer[cr * 64 + cc * 8 + b] = ~buffer[cr * 64 + cc * 8 + b];
+void oled_puts(int row, int column, char *s) {
+  while (*s) {
+    char c = *s++;
+    if (c >= 'A' && c <= 'Z') {
+      memcpy(buffer + row * 64 + column * 8 + 1, font5x5_abc + (c - 'A') * 5, 5);
+    } else {
+      memcpy(buffer + row * 64 + column * 8 + 1, &font5x5_extra[20 * 5], 5);
+    }
+  }
+}
+
+void oled_invert(int row, int column) {
+  for (int b = 0; b < 7; b++) buffer[row * 64 + column * 8 + b] = ~buffer[row * 64 + column * 8 + b];
+  oled_data(OLED_DEVICE_ADDRESS, buffer, 64*6);
 }
