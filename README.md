@@ -68,7 +68,7 @@ I recommend [cgdb](https://cgdb.github.io/) (install via ```brew install cgdb```
 
 For flashing and debugging cd into the corresponding sub-directory:
 ```
-cd src/test
+cd src/examples/test
 cgdb -d arm-none-eabi-gdb test.elf
 ```
 
