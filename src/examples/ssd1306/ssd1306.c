@@ -22,7 +22,7 @@
 #include <extpin.h>
 #include <board.h>
 #include "ssd1306.h"
-#include "../libs/i2c/i2c_core.h"
+#include <i2c.h>
 
 // == low level functions ==================================
 

@@ -1,13 +1,21 @@
 /**
- * Definitions for the ISL 29125 RGB Sensor.
- *
+ * Driver for the RGB sensor ISL29125.
  * data sheet: http://www.intersil.com/content/dam/Intersil/documents/isl2/isl29125.pdf
  *
+ * The library assumes that the i2c bus has been initialized already.
+ * It will only communicate by issuing start/stop conditions and transmitting
+ * command and data requests.
+ *
+ * The 36 bit color mode is supported. However, downsampling it to 24 bit will
+ * incur an extra cost of reading the color mode register (i2c transmission) for
+ * each color.
+ *
  * @author Matthias L. Jugel
+ * @date 2016-04-01
+ *
+ * Copyright 2016 ubirch GmbH (https://ubirch.com)
  *
  * == LICENSE ==
- * Copyright 2015 ubirch GmbH (http://www.ubirch.com)
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,7 +28,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef UBIRCH_ISL29125_H
 #define UBIRCH_ISL29125_H
 
@@ -152,15 +159,14 @@ uint8_t isl_read_blue8(void);
 
 /**
  * Read full 48 bit color from sensor
+ * @param rgb48 the color struct to store the color in
  */
 void isl_read_rgb48(rgb48_t *rgb48);
 
 /**
  * Read sensor data as 24 bit RGB
- * @param gamma the gamma adjustment >= 1
+ * @param rgb24 the color struct to store the color in
  */
 void isl_read_rgb24(rgb24_t *rgb24);
-
-
 
 #endif //UBIRCH_ISL29125_H

@@ -1,19 +1,12 @@
 /**
- * RGB sensor library (ISL29125)
- *
- * The library assumes that the i2c bus has been initialized already.
- * It will only communicate by issuing start/stop conditions and transmitting
- * command and data requests.
- *
- * The 36 bit color mode is supported. However, downsampling it to 24 bit will
- * incur an extra cost of reading the color mode register (i2c transmission) for
- * each color.
+ * Driver for the RGB sensor ISL29125.
  *
  * @author Matthias L. Jugel
+ * @date 2016-04-01
+ *
+ * Copyright 2016 ubirch GmbH (https://ubirch.com)
  *
  * == LICENSE ==
- * Copyright 2015 ubirch GmbH (http://www.ubirch.com)
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,7 +23,7 @@
 #include <drivers/fsl_i2c.h>
 #include <utilities/fsl_debug_console.h>
 #include "isl29125.h"
-#include "../libs/i2c/i2c_core.h"
+#include <i2c.h>
 
 
 void isl_set(uint8_t reg, uint8_t data) {
@@ -52,7 +45,7 @@ uint8_t isl_reset(void) {
   status_t status = i2c_write_reg(ISL_DEVICE_ADDRESS, 0x00, &reset, 1);
   I2C_MasterStop(I2C2);
 
-  i2c_error("isl29125 reset", status);
+  i2c_error("rgbsensor reset", status);
   // maybe not necessary if correct stop signal is sent above
   uint8_t check, timeout = 5 /* do the check for 5 times */;
   do {

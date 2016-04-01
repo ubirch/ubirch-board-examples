@@ -4,7 +4,7 @@
 #include <extpin.h>
 #include <ctype.h>
 #include "ssd1306.h"
-#include "../libs/i2c/i2c_core.h"
+#include <i2c.h>
 #include "font5x5.h"
 
 void oled_invert(int row, int column);

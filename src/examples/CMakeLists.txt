@@ -1,0 +1,8 @@
+add_subdirectory(test)
+add_subdirectory(lpuart)
+add_subdirectory(rtc)
+add_subdirectory(wolfssl-test)
+add_subdirectory(sim800h)
+add_subdirectory(i2c_scan)
+add_subdirectory(rgbsensor)
+add_subdirectory(ssd1306)
