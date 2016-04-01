@@ -14,7 +14,7 @@ PROJECT(ubirch-board)
 include(cmake/kinetis-sdk-2.0.cmake)
 include(cmake/ubirch-firmware.cmake)
 include(cmake/wolfssl.cmake)
-include(cmake/ugui.cmake)
+#include(cmake/ugui.cmake)
 
 add_subdirectory(src/driver)
 add_subdirectory(src/examples)
