@@ -9,7 +9,7 @@
 
 void oled_invert(int row, int column);
 
-void oled_puts(int row, int column, char *s) ;
+void oled_putc(int row, int column, char c);
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
@@ -80,41 +80,52 @@ int main(void) {
   oled_cmd(OLED_DEVICE_ADDRESS, 0x20 + 63);
 
   memset(buffer, 0x00, 64 * 6);
-  oled_data(OLED_DEVICE_ADDRESS, buffer, 64*6);
+  oled_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
 
   int row = 0, column = 0;
   oled_invert(row, column);
 
-  char c[8];
-  c[1] = 0;
+  // write all characters read from the debug console
+  // to the display and move cursor forward, wraps at the
+  // display boundary (8x6)
+  // stops when escape is pressed
+  char c;
   do {
-    c[0] = (uint8_t) toupper(GETCHAR());
+    c = (uint8_t) toupper(GETCHAR());
     oled_invert(row, column);
-    if(c[0] != ' ') oled_puts(row, column, c);
-    if(column++ > 7) {
+    switch (c) {
+      case '\r':
+      case '\n':
+        column = -1;
+            row++;
+            break;
+      case ' ':
+        break;
+      default:
+        oled_putc(row, column, c);
+            break;
+    }
+    if (++column > 7) {
       column = 0;
       row++;
     }
-    if(row > 5) row = 0;
+    if (row > 5) row = 0;
     oled_invert(row, column);
-  } while(c[0] != '\r');
+  } while (c != '\e');
 
   PRINTF("DONE\r\n");
   return 0;
 }
 
-void oled_puts(int row, int column, char *s) {
-  while (*s) {
-    char c = *s++;
-    if (c >= 'A' && c <= 'Z') {
-      memcpy(buffer + row * 64 + column * 8 + 1, font5x5_abc + (c - 'A') * 5, 5);
-    } else {
-      memcpy(buffer + row * 64 + column * 8 + 1, &font5x5_extra[20 * 5], 5);
-    }
+void oled_putc(int row, int column, char c) {
+  if (c >= 'A' && c <= 'Z') {
+    memcpy(buffer + row * 64 + column * 8 + 1, font5x5_abc + (c - 'A') * 5, 5);
+  } else {
+    memcpy(buffer + row * 64 + column * 8 + 1, &font5x5_extra[20 * 5], 5);
   }
 }
 
 void oled_invert(int row, int column) {
   for (int b = 0; b < 7; b++) buffer[row * 64 + column * 8 + b] = ~buffer[row * 64 + column * 8 + b];
-  oled_data(OLED_DEVICE_ADDRESS, buffer, 64*6);
+  oled_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
 }
