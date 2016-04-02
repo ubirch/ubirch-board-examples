@@ -82,11 +82,11 @@ int main(void) {
   PRINTF("RTC example: set up time to wake up an alarm\r\n");
 
   /* Set a start date time and start RT */
-  date.year = 2014U;
-  date.month = 12U;
-  date.day = 25U;
-  date.hour = 19U;
-  date.minute = 0;
+  date.year = 2016U;
+  date.month = 04U;
+  date.day = 1U;
+  date.hour = 23U;
+  date.minute = 15;
   date.second = 0;
 
   /* RTC time counter has to be stopped before setting the date & time in the TSR register */

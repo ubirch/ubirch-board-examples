@@ -24,63 +24,39 @@ int main(void) {
   SysTick_Config(RUN_SYSTICK_10MS);
   PRINTF("\r\n-- SSD1306 test\r\n");
 
+  // initialize i2c
+  i2c_init(I2C_FAST_MODE);
+
   // reset oled display
-  oled_reset(EXTPIN_3);
+  ssd1306_reset(EXTPIN_3);
 
   BusyWait100us(1000);
 
-  // initialize i2c
-  i2c_init(I2C_FAST_MODE);
   const status_t status = i2c_ping(OLED_DEVICE_ADDRESS);
   if (status == kStatus_Success) {
     PRINTF("OLED device found!\r\n");
   } else {
+#ifndef NDEBUG
     i2c_error("OLED device not found", status);
+#endif
+    PRINTF("OLED device not found.\r\n");
   };
 
+  ssd1306_clear(OLED_DEVICE_ADDRESS);
 
-  // software configuration according to specs
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_OFF);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_CLOCK_DIV_FREQ);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0b100000); // 0x80: 1000 (freq) 00 (divider)
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_MULTIPLEX_RATIO);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x2F);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_OFFSET);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x00);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_START_LINE | 0x00);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_CHARGE_PUMP);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x14);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_SCAN_REVERSE);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_SEGMENT_REMAP1);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_COM_PIN_CONFIG);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x12);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_CONTRAST);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x10);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_PRECHARGE_PERIOD);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x22);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_VCOM_DESELECT);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x00);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_RESUME);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_NORMAL);
-
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_ADDRESSING_MODE);
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_ADDR_MODE_HORIZ);
-
-  oled_clear(OLED_DEVICE_ADDRESS);
-
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_ON);
+  ssd1306_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_ON);
 
   // set the display constraints
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_PAGE_ADDRESS);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x00);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x05);
+  ssd1306_cmd(OLED_DEVICE_ADDRESS, OLED_PAGE_ADDRESS);
+  ssd1306_cmd(OLED_DEVICE_ADDRESS, 0x00);
+  ssd1306_cmd(OLED_DEVICE_ADDRESS, 0x05);
 
-  oled_cmd(OLED_DEVICE_ADDRESS, OLED_COLUMN_ADDRESS);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x20);
-  oled_cmd(OLED_DEVICE_ADDRESS, 0x20 + 63);
+  ssd1306_cmd(OLED_DEVICE_ADDRESS, OLED_COLUMN_ADDRESS);
+  ssd1306_cmd(OLED_DEVICE_ADDRESS, 0x20);
+  ssd1306_cmd(OLED_DEVICE_ADDRESS, 0x20 + 63);
 
   memset(buffer, 0x00, 64 * 6);
-  oled_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
+  ssd1306_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
 
   int row = 0, column = 0;
   oled_invert(row, column);
@@ -127,5 +103,5 @@ void oled_putc(int row, int column, char c) {
 
 void oled_invert(int row, int column) {
   for (int b = 0; b < 7; b++) buffer[row * 64 + column * 8 + b] = ~buffer[row * 64 + column * 8 + b];
-  oled_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
+  ssd1306_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
 }

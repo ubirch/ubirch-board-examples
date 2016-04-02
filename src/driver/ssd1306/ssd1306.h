@@ -83,26 +83,26 @@
 /**
  * Reset the controller.
  */
-void oled_reset(EXTPIN_T reset_pin);
+void ssd1306_reset(EXTPIN_T reset_pin);
 
 /**
  * Send a command to the OLED display controller.
  * @param address the controller i2c address
  * @param data the command byte
  */
-void oled_cmd(uint8_t address, uint8_t command);
+void ssd1306_cmd(uint8_t address, uint8_t command);
 
 /**
  * Send data to the OLED display controller.
  * @param address the controller i2c address
  * @param data the data byte
  */
-void oled_data(uint8_t address, uint8_t *data, size_t size);
+void ssd1306_data(uint8_t address, uint8_t *data, size_t size);
 
 /**
  * Clear the display.
  * @param address the controller i2c address
  */
-void oled_clear(uint8_t address);
+void ssd1306_clear(uint8_t address);
 
 #endif //UBIRCH_SSD1306_H

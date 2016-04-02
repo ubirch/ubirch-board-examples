@@ -1,4 +1,4 @@
-target extended-remote localhost:3333
+target extended-remote localhost:2331
 
 monitor speed 1000
 monitor reset

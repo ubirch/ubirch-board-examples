@@ -20,10 +20,10 @@
  * limitations under the License.
  */
 
-#include <drivers/fsl_i2c.h>
 #include <utilities/fsl_debug_console.h>
-#include "isl29125.h"
+#include <drivers/fsl_i2c.h>
 #include <i2c.h>
+#include "isl29125.h"
 
 
 void isl_set(uint8_t reg, uint8_t data) {
@@ -37,7 +37,9 @@ uint8_t isl_get(uint8_t reg) {
 uint8_t isl_reset(void) {
   // check device is there
   uint8_t device_id = i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_DEVICE_ID);
+#ifndef NDEBUG
   PRINTF("device id: 0x%02x (should be 0x7d)\r\n", device_id);
+#endif
   if (device_id != ISL_DEVICE_ID) return 0;
 
   // reset and make sure we are actually done resetting
@@ -45,7 +47,9 @@ uint8_t isl_reset(void) {
   status_t status = i2c_write_reg(ISL_DEVICE_ADDRESS, 0x00, &reset, 1);
   I2C_MasterStop(I2C2);
 
-  i2c_error("rgbsensor reset", status);
+#ifndef NDEBUG
+  i2c_error("isl_reset()", status);
+#endif
   // maybe not necessary if correct stop signal is sent above
   uint8_t check, timeout = 5 /* do the check for 5 times */;
   do {
@@ -89,6 +93,7 @@ uint8_t isl_read_blue8(void) {
   return downsample(isl_read_blue());
 }
 
+// TODO: burst read 48 bit
 void isl_read_rgb48(rgb48_t *rgb48) {
   rgb48->red = isl_read_red(),
   rgb48->green = isl_read_green(),
