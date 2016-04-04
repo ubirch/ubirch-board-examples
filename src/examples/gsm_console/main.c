@@ -6,9 +6,7 @@
 #include <stdbool.h>
 #include <board.h>
 #include <stdio.h>
-#include <sim800.h>
-#include "ubirch_gsm.h"
-
+#include <sim800h.h>
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
@@ -22,12 +20,12 @@ int main(void) {
   SysTick_Config(RUN_SYSTICK_10MS);
 
   // prepare GSM module
-  gsm_enable();
+  sim800h_enable();
   LPUART_EnableInterrupts(GSM_UART, kLPUART_RxDataRegFullInterruptEnable);
   EnableIRQ(GSM_UART_IRQ);
 
   // power on GSM module
-  gsm_power_enable();
+  sim800h_power_enable();
 
 
   uint8_t buffer[128], idx = 0, newline[2] = {'\r', '\n' };

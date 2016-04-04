@@ -1,24 +1,24 @@
-#include "ubirch_gsm.h"
+#include "sim800h.h"
 
-void gsm_power_enable() {
+void sim800h_power_enable() {
   const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
   // the clock enable for GSM_PWR_EN is done in board.c
   GPIO_PinInit(GSM_PWR_EN_GPIO, GSM_PWR_EN_PIN, &OUTFALSE);
   GPIO_WritePinOutput(GSM_PWR_EN_GPIO, GSM_PWR_EN_PIN, true);
 
   uint16_t bat;
-  while((bat = VBat_Read()) < 2000) {
+  while ((bat = VBat_Read()) < 2000) {
     PRINTF("%d\r", bat);
   }
   PRINTF("%d\r\n", bat);
 }
 
-void gsm_power_disable() {
+void sim800h_power_disable() {
   GPIO_WritePinOutput(GSM_PWR_EN_GPIO, GSM_PWR_EN_PIN, false);
 }
 
 
-void gsm_enable() {
+void sim800h_enable() {
   const gpio_pin_config_t OUTTRUE = {kGPIO_DigitalOutput, true};
   const gpio_pin_config_t IN = {kGPIO_DigitalInput, false};
 

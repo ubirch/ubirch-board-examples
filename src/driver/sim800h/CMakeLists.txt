@@ -1,0 +1,4 @@
+# SSD1306 (OLED) driver
+add_library(sim800h sim800h.c)
+target_link_libraries(sim800h i2c)
+target_include_directories(sim800h PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

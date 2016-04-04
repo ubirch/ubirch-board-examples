@@ -1,4 +1,4 @@
 # SSD1306 (OLED) driver
-ADD_LIBRARY(ssd1306 ssd1306.c)
-TARGET_LINK_LIBRARIES(ssd1306 i2c)
-TARGET_INCLUDE_DIRECTORIES(ssd1306 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(ssd1306 ssd1306.c)
+target_link_libraries(ssd1306 i2c)
+target_include_directories(ssd1306 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

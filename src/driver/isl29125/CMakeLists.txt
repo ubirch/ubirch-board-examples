@@ -1,4 +1,4 @@
 # ISL29125 driver
-ADD_LIBRARY(isl29125 isl29125.c)
-TARGET_LINK_LIBRARIES(isl29125 i2c)
-TARGET_INCLUDE_DIRECTORIES(isl29125 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(isl29125 isl29125.c)
+target_link_libraries(isl29125 i2c)
+target_include_directories(isl29125 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -1,3 +1,5 @@
-ADD_SUBDIRECTORY(i2c)
-ADD_SUBDIRECTORY(isl29125)
-ADD_SUBDIRECTORY(ssd1306)
+add_subdirectory(i2c)
+add_subdirectory(isl29125)
+add_subdirectory(ssd1306)
+add_subdirectory(sim800h)
+
