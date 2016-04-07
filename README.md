@@ -139,20 +139,39 @@ The pin configuration is as follows:
   26 = switchable VDD
 ```
 
-### ```src/test``` - blink and echo debug console
+### ```src/examples/gsm_console``` - Console for the SIM800 via DEBUG UART
+
+Simply proxies the UART to the internal GSM modem. You can issue AT commands this way
+and play with the SIM800H.
+
+### ```src/examples/i2c_scan``` - Scan I2C bus for devices
+
+Small scanner that scans all adresses for I2C slave devices and reports their addres.
+
+### ```src/examples/lpuart``` - UART (Serial) console code
+
+Compiles the example code from the KSDK 2.0. Can be used to test the UART.
+
+### ```src/examples/oled``` - Echo debug console input to the oled display
+
+Initialized an SSD1306 based OLED display and lets you enter characters via the
+debug console which are then displayed on the OLED.
+
+### ```src/examples/rgbsensor``` - Read RGB sensor data
+
+Initialized the ISL29125 RGB sensor via I2C and prints RGB information on the
+debug console.
+
+### ```src/examples/rtc``` - Real Time Clock
+
+Compiles the Realtime clock example from KSDK 2.0. Shows how the RTC works.
+
+### ```src/examples/test``` - blink and echo debug console
 
 Just a simple test that lets the on-board LED blink and echos characters back that you
 type into the debug console.
 
-### ```src/lpuart``` - UART (Serial) console code
-
-Compiles the example code from the KSDK 2.0. Can be used to test the UART.
-
-### ```src/rtc``` - Real Time Clock
-
-Compiles the Realtime clock example from KSDK 2.0. Shows how the RTC works.
-
-### ```src/wolfssl-test```
+### ```src/examples/wolfssl-test```
 
 This code will perform an RSA encryption and signing on-board and outputs the
 result hex-encoded to the debug console. The result can be verified using openssl.
