@@ -1,3 +1,4 @@
+add_subdirectory(gsm_commands)
 add_subdirectory(gsm_console)
 add_subdirectory(i2c_scan)
 add_subdirectory(lpuart)
