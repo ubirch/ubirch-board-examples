@@ -15,7 +15,7 @@ void SysTick_Handler() {
   LED_Write(on);
 }
 
-#define GSM_RINGBUFFER_SIZE 256
+#define GSM_RINGBUFFER_SIZE 48
 uint8_t gsmUartRingBuffer[GSM_RINGBUFFER_SIZE];
 volatile int gsmRxIndex, gsmRxHead;
 
@@ -178,7 +178,10 @@ int main(void) {
   char buffer[128] = {0, 0};
   while (true) {
     readline(buffer, 127);
-    PRINTF("-- %s\r\n", buffer);
+    if(is_urc(buffer) == 13) {
+      gsm_cmd("AT+CPOWD=1");
+      gsm_expect_urc(14);
+    }
     buffer[0] = 0;
   }
 }

@@ -1,5 +1,5 @@
 # ADD_EXECUTABLE
-ADD_EXECUTABLE(gsm_commands main.c at_command.c)
+ADD_EXECUTABLE(gsm_commands main.c)
 target_link_libraries(gsm_commands sim800h)
 
 SET_TARGET_PROPERTIES(gsm_commands PROPERTIES OUTPUT_NAME "gsm_commands.elf")
