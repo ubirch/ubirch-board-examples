@@ -1,12 +1,46 @@
+/**
+ * ubirch#1 SIM800H cell phone chip driver.
+ *
+ * @author Matthias L. Jugel
+ * @date 2016-04-09
+ *
+ * Copyright 2016 ubirch GmbH (https://ubirch.com)
+ *
+ * == LICENSE ==
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include "sim800h.h"
+
+#ifndef NDEBUG
+#include <utilities/fsl_debug_console.h>
+#else
+# undef PRINTF
+# define PRINTF(...)
+#endif
 
 #define GSM_RINGBUFFER_SIZE 32
 static uint8_t gsmUartRingBuffer[GSM_RINGBUFFER_SIZE];
 static volatile int gsmRxIndex, gsmRxHead;
 
+/**
+ * The
+ */
 void GSM_UART_IRQ_HANDLER(void) {
   if ((kLPUART_RxDataRegFullFlag) & LPUART_GetStatusFlags(GSM_UART)) {
     uint8_t data = LPUART_ReadByte(GSM_UART);
+
+    // it may be necessary to create a critical section here, but
+    // right now it didn't hurt us to not disable interrupts
 
     // __disable_irq();
     /* If ring buffer is not full, add data to ring buffer. */
@@ -21,6 +55,7 @@ void GSM_UART_IRQ_HANDLER(void) {
 size_t sim800h_readline(char *buffer, size_t max) {
   size_t idx = 0;
   while (true) {
+    __WFE();
     if ((gsmRxHead % GSM_RINGBUFFER_SIZE) == gsmRxIndex) continue;
     uint8_t c = gsmUartRingBuffer[gsmRxHead++];
     gsmRxHead %= GSM_RINGBUFFER_SIZE;
@@ -39,7 +74,10 @@ size_t sim800h_readline(char *buffer, size_t max) {
   return idx;
 }
 
-
+void sim800h_writeline(const char *buffer) {
+  LPUART_WriteBlocking(GSM_UART, (const uint8_t *) buffer, strlen(buffer));
+  LPUART_WriteBlocking(GSM_UART, (const uint8_t *) "\r\n", 2);
+}
 
 void sim800h_power_enable() {
   const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
@@ -57,7 +95,6 @@ void sim800h_power_enable() {
 void sim800h_power_disable() {
   GPIO_WritePinOutput(GSM_PWR_EN_GPIO, GSM_PWR_EN_PIN, false);
 }
-
 
 void sim800h_enable() {
   const gpio_pin_config_t OUTTRUE = {kGPIO_DigitalOutput, true};
@@ -80,6 +117,7 @@ void sim800h_enable() {
   PORT_SetPinMux(GSM_PORT, GSM_RI_PIN, GSM_RI_ALT);
   GPIO_PinInit(GSM_GPIO, GSM_RI_PIN, &IN);
 
+  // configure uart driver connected to the SIM800H
   lpuart_config_t lpuart_config;
   LPUART_GetDefaultConfig(&lpuart_config);
   lpuart_config.baudRate_Bps = 115200;
@@ -92,6 +130,7 @@ void sim800h_enable() {
   LPUART_EnableInterrupts(GSM_UART, kLPUART_RxDataRegFullInterruptEnable);
   EnableIRQ(GSM_UART_IRQ);
 
+  // power on the SIM800H
   GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, true);
   BusyWait100us(100); //10ms
   GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, false);
