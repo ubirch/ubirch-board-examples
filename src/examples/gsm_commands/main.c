@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <board.h>
-#include <stdio.h>
 #include <sim800h.h>
 
 void SysTick_Handler() {
@@ -15,27 +14,8 @@ void SysTick_Handler() {
   LED_Write(on);
 }
 
-#define GSM_RINGBUFFER_SIZE 48
-uint8_t gsmUartRingBuffer[GSM_RINGBUFFER_SIZE];
-volatile int gsmRxIndex, gsmRxHead;
-
-void GSM_UART_IRQ_HANDLER(void) {
-  if ((kLPUART_RxDataRegFullFlag) & LPUART_GetStatusFlags(GSM_UART)) {
-    uint8_t data = LPUART_ReadByte(GSM_UART);
-
-//    __disable_irq();
-    /* If ring buffer is not full, add data to ring buffer. */
-    if (((gsmRxIndex + 1) % GSM_RINGBUFFER_SIZE) != gsmRxHead) {
-      gsmUartRingBuffer[gsmRxIndex++] = data;
-      gsmRxIndex %= GSM_RINGBUFFER_SIZE;
-    }
-//    __enable_irq();
-  }
-}
-
 // this useful list found here: https://github.com/cloudyourcar/attentive
-#define UNSOLICTED_RESULT_CODES 19
-const char *SIM800H_URC[UNSOLICTED_RESULT_CODES] = {
+const char *SIM800H_URC[] = {
   "+CIPRXGET: 1,",  /*! incoming socket data notification */
   "+FTPGET: 1,",    /*! FTP state change notification */
   "+PDP: DEACT",    /*! PDP disconnected */
@@ -55,11 +35,12 @@ const char *SIM800H_URC[UNSOLICTED_RESULT_CODES] = {
   "UNDER-VOLTAGE WARNNING",
   "OVER-VOLTAGE POWER DOWN",
   "OVER-VOLTAGE WARNNING",
+  NULL
 };
 
 int is_urc(char *line) {
   size_t len = strlen(line);
-  for (int i = 0; i < UNSOLICTED_RESULT_CODES; i++) {
+  for (int i = 0; SIM800H_URC[i] != NULL; i++) {
     const char *urc = SIM800H_URC[i];
     size_t urc_len = strlen(SIM800H_URC[i]);
     if (len >= urc_len && !strncmp(urc, line, urc_len)) {
@@ -71,30 +52,6 @@ int is_urc(char *line) {
   return -1;
 }
 
-size_t readline(char *buffer, size_t max) {
-  size_t idx = 0;
-  while (true) {
-    if ((gsmRxHead % GSM_RINGBUFFER_SIZE) == gsmRxIndex) continue;
-    uint8_t c = gsmUartRingBuffer[gsmRxHead++];
-    gsmRxHead %= GSM_RINGBUFFER_SIZE;
-//    if(c == '\r' || c == '\n') PRINTF("[%02x]", c);
-//    else PRINTF("[%c]", c);
-    if (c == '\r') continue;
-    if (c == '\n') {
-//      PRINTF("\r\n");
-      if (!idx) {
-        idx = 0;
-        continue;
-      }
-      break;
-    }
-    if (max - idx) buffer[idx++] = c;
-  }
-
-  buffer[idx] = 0;
-  return idx;
-}
-
 void gsm_cmd(const char *cmd) {
   PRINTF("GSM (%02d) <- %s\r\n", strlen(cmd), cmd);
   LPUART_WriteBlocking(GSM_UART, (const uint8_t *) cmd, strlen(cmd));
@@ -104,8 +61,8 @@ void gsm_cmd(const char *cmd) {
 void gsm_expect_urc(int n) {
   char response[128] = {0};
   do {
-    readline(response, 127);
-    PRINTF("GSM .... ? %s\r\n", response);
+    sim800h_readline(response, 127);
+    PRINTF("GSM .... ?? %s\r\n", response);
   } while (is_urc(response) != n);
 }
 
@@ -113,7 +70,7 @@ bool gsm_expect(const char *expected) {
   char response[255] = {0};
   size_t len, expected_len = strlen(expected);
   while (true) {
-    len = readline(response, 127);
+    len = sim800h_readline(response, 127);
     if (is_urc(response) >= 0) continue;
     PRINTF("GSM (%02d) -> %s\r\n", len, response);
     return strncmp(expected, (const char *) response, MIN(len, expected_len)) == 0;
@@ -126,8 +83,6 @@ int main(void) {
 
   // prepare GSM module
   sim800h_enable();
-  LPUART_EnableInterrupts(GSM_UART, kLPUART_RxDataRegFullInterruptEnable);
-  EnableIRQ(GSM_UART_IRQ);
 
   // power on GSM module
   sim800h_power_enable();
@@ -140,6 +95,9 @@ int main(void) {
     gsm_expect("OK");
 
   PRINTF("----- ECHO OFF\r\n");
+
+  gsm_cmd("ATV1");
+  gsm_expect("OK");
 
   gsm_cmd("ATI");
   gsm_expect("SIM");
@@ -175,14 +133,24 @@ int main(void) {
 
   PRINTF("----- INIT DONE\r\n");
 
-  char buffer[128] = {0, 0};
+  char buffer[128];
   while (true) {
-    readline(buffer, 127);
-    if(is_urc(buffer) == 13) {
-      gsm_cmd("AT+CPOWD=1");
-      gsm_expect_urc(14);
-    }
     buffer[0] = 0;
+    sim800h_readline(buffer, 127);
+    switch (is_urc(buffer)) {
+      case 13: {
+        gsm_cmd("AT+CPOWD=1");
+        gsm_expect_urc(14);
+        break;
+      }
+      case 14: {
+        sim800h_power_disable();
+        break;
+      }
+      default: {
+        PRINTF(">> %s\r\n", buffer);
+      }
+    }
   }
 }
 

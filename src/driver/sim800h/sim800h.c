@@ -1,5 +1,46 @@
 #include "sim800h.h"
 
+#define GSM_RINGBUFFER_SIZE 32
+static uint8_t gsmUartRingBuffer[GSM_RINGBUFFER_SIZE];
+static volatile int gsmRxIndex, gsmRxHead;
+
+void GSM_UART_IRQ_HANDLER(void) {
+  if ((kLPUART_RxDataRegFullFlag) & LPUART_GetStatusFlags(GSM_UART)) {
+    uint8_t data = LPUART_ReadByte(GSM_UART);
+
+    // __disable_irq();
+    /* If ring buffer is not full, add data to ring buffer. */
+    if (((gsmRxIndex + 1) % GSM_RINGBUFFER_SIZE) != gsmRxHead) {
+      gsmUartRingBuffer[gsmRxIndex++] = data;
+      gsmRxIndex %= GSM_RINGBUFFER_SIZE;
+    }
+    // __enable_irq();
+  }
+}
+
+size_t sim800h_readline(char *buffer, size_t max) {
+  size_t idx = 0;
+  while (true) {
+    if ((gsmRxHead % GSM_RINGBUFFER_SIZE) == gsmRxIndex) continue;
+    uint8_t c = gsmUartRingBuffer[gsmRxHead++];
+    gsmRxHead %= GSM_RINGBUFFER_SIZE;
+    if (c == '\r') continue;
+    if (c == '\n') {
+      if (!idx) {
+        idx = 0;
+        continue;
+      }
+      break;
+    }
+    if (max - idx) buffer[idx++] = c;
+  }
+
+  buffer[idx] = 0;
+  return idx;
+}
+
+
+
 void sim800h_power_enable() {
   const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
   // the clock enable for GSM_PWR_EN is done in board.c
@@ -47,6 +88,9 @@ void sim800h_enable() {
   LPUART_Init(GSM_UART, &lpuart_config, LPUART_BASE_CLOCK);
   LPUART_EnableRx(GSM_UART, true);
   LPUART_EnableTx(GSM_UART, true);
+
+  LPUART_EnableInterrupts(GSM_UART, kLPUART_RxDataRegFullInterruptEnable);
+  EnableIRQ(GSM_UART_IRQ);
 
   GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, true);
   BusyWait100us(100); //10ms
