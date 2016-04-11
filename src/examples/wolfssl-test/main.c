@@ -33,7 +33,7 @@
 #include <wolfssl/wolfcrypt/signature.h>
 #include "public_key.h"
 
-const byte plaintext[] = "We love things.\n0a1b2c3d4e5f6g7h8i9j-UBIRCH\n";
+static const char plaintext[] = "We love things.\n0a1b2c3d4e5f6g7h8i9j-UBIRCH\n";
 
 void print_buffer_hex(const byte *out, int len) {
   for (int i = 0; i < len; i++) {
@@ -100,7 +100,7 @@ int main(void) {
   if (init_recipient_public_key(test_der, test_der_len)) error("failed to load recipient public key");
 
   byte cipher[256]; // 256 bytes is large enough to store 2048 bit RSA ciphertext
-  word32 plaintextLength = sizeof(plaintext);
+  word32 plaintextLength = strlen(plaintext);
   word32 cipherLength = sizeof(cipher);
 
   PRINTF("- signing message with board private key\r\n");
@@ -109,7 +109,7 @@ int main(void) {
 
   if (wc_SignatureGenerate(
     WC_HASH_TYPE_SHA256, WC_SIGNATURE_TYPE_RSA,
-    plaintext, plaintextLength,
+    (const byte *) plaintext, plaintextLength,
     signature, (word32 *) &signatureLength,
     &board_rsa_key, sizeof(board_rsa_key),
     &rng) != 0)
@@ -118,7 +118,7 @@ int main(void) {
   print_buffer_hex(signature, signatureLength);
 
   PRINTF("- encrypting message\r\n");
-  int r = wc_RsaPublicEncrypt(plaintext, plaintextLength, cipher, cipherLength, &recipient_public_key, &rng);
+  int r = wc_RsaPublicEncrypt((const byte *) plaintext, plaintextLength, cipher, cipherLength, &recipient_public_key, &rng);
   if(r < 0) error("failed to encrypt message");
 
   PRINTF("-- CIPHER (%d bytes)\r\n", r);
@@ -129,7 +129,7 @@ int main(void) {
 
   PRINTF("THE END\r\n");
   while (true) {
-    uint8_t ch = GETCHAR();
+    uint8_t ch = (uint8_t) GETCHAR();
     if (ch == '\r') PUTCHAR('\n');
     PUTCHAR(ch);
   }

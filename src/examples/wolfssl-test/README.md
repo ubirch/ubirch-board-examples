@@ -41,7 +41,7 @@ You can revert the hex-strings back into binary using the following commands:
   ```
   xxd -l 256 -ps  -r | openssl rsautl -verify -inkey board.pub.pem -pubin | xxd -ps -c 32
   ```
-  The message signature should be: ```1c873295fe9bdf8f847682e1103dc9c99f429a5ad89638adffbd44a5d5174a21```
+  The message signature should be: ```ff5ba36633591ef708c0af6bb9722c7cedd6717272af9273702d0ed55697a5a9```
 
 * decrypt message and compare message has with extracted signature hash (paste CIPHER)
   ```
