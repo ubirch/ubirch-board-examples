@@ -1,4 +1,6 @@
 libs/SDK_2.0_MK82FN256xxx15
+public_key.h
+config.h
 
 ### C template
 # Object files

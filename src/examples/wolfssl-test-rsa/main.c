@@ -94,7 +94,7 @@ int main(void) {
   BOARD_Init();
   SysTick_Config(SystemCoreClock / 100 - 1);
 
-  PRINTF("ubirch #2 RSA encryption/signature test\r\n");
+  PRINTF("ubirch #1 r0.2 RSA encryption/signature test\r\n");
   if (init_trng() != 0) error("failed to initialize TRNG");
   if (init_board_key(2048) != 0) error("failed to generate key pair");
   if (init_recipient_public_key(test_der, test_der_len)) error("failed to load recipient public key");
