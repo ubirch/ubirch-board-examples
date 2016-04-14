@@ -8,7 +8,21 @@
 #include <stdio.h>
 #include <sim800h.h>
 
+static char buffer[128];
+static volatile uint8_t idx = 0;
+
 void SysTick_Handler() {
+  // we misuse the systick handler to read from the sim800h ringbuffer
+  int c = sim800_read();
+  if(c != -1 && idx < 127 && c != '\r') {
+    if(c == '\n') {
+      buffer[idx] = '\0';
+      PRINTF("%s\r\n", buffer);
+      idx = 0;
+    } else buffer[idx++] = (char) c;
+  }
+
+  // still do the blinking
   static uint32_t counter = 0;
   counter++;
   bool on = (counter % 50) < 40;  //long on
@@ -19,35 +33,21 @@ int main(void) {
   BOARD_Init();
   SysTick_Config(RUN_SYSTICK_10MS);
 
-  // prepare GSM module
   sim800h_enable();
-  LPUART_EnableInterrupts(GSM_UART, kLPUART_RxDataRegFullInterruptEnable);
-  EnableIRQ(GSM_UART_IRQ);
-
-  // power on GSM module
   sim800h_power_enable();
 
-
-  uint8_t buffer[128], idx = 0, newline[2] = {'\r', '\n' };
-
+  uint8_t buffer[128], idx = 0;
   while (true) {
-    uint8_t ch = GETCHAR();
+    int ch = GETCHAR();
     if (ch == '\r' || ch == '\n') {
       PUTCHAR('\r');
       PUTCHAR('\n');
-      LPUART_WriteBlocking(GSM_UART, buffer, idx);
-      LPUART_WriteBlocking(GSM_UART, newline, 2);
+      buffer[idx] = '\0';
+      sim800h_writeline((const char *) buffer);
       idx = 0;
     } else {
       PUTCHAR(ch);
-      buffer[idx++] = ch;
+      buffer[idx++] = (uint8_t) ch;
     }
   }
 }
-
-void GSM_UART_IRQ_HANDLER(void) {
-  if ((kLPUART_RxDataRegFullFlag)&LPUART_GetStatusFlags(GSM_UART)) {
-    PUTCHAR(LPUART_ReadByte(GSM_UART));
-  }
-}
-

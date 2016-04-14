@@ -45,6 +45,12 @@ void sim800h_power_disable();
  */
 void sim800h_enable();
 
+/*!
+ * Read a single byte from the ringbuffer.
+ * @return character or -1 if no data available
+ */
+int sim800_read();
+
 /*! Read a single line from the SIM800H */
 size_t sim800h_readline(char *buffer, size_t max);
 

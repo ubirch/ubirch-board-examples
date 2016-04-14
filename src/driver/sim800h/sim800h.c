@@ -52,13 +52,21 @@ void GSM_UART_IRQ_HANDLER(void) {
   }
 }
 
+int sim800_read() {
+  if((gsmRxHead % GSM_RINGBUFFER_SIZE) == gsmRxIndex) return -1;
+  int c = gsmUartRingBuffer[gsmRxHead++];
+  gsmRxHead %= GSM_RINGBUFFER_SIZE;
+  return c;
+}
+
 size_t sim800h_readline(char *buffer, size_t max) {
   size_t idx = 0;
   while (true) {
     __WFE();
-    if ((gsmRxHead % GSM_RINGBUFFER_SIZE) == gsmRxIndex) continue;
-    uint8_t c = gsmUartRingBuffer[gsmRxHead++];
-    gsmRxHead %= GSM_RINGBUFFER_SIZE;
+
+    int c = sim800_read();
+    if(c == -1) continue;
+
     if (c == '\r') continue;
     if (c == '\n') {
       if (!idx) {
@@ -67,7 +75,7 @@ size_t sim800h_readline(char *buffer, size_t max) {
       }
       break;
     }
-    if (max - idx) buffer[idx++] = c;
+    if (max - idx) buffer[idx++] = (char) c;
   }
 
   buffer[idx] = 0;
