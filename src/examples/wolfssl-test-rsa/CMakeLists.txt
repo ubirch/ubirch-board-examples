@@ -1,7 +1,7 @@
 # ADD_EXECUTABLE
 ADD_EXECUTABLE(wolfssl-test-rsa main.c)
 
-SET_TARGET_PROPERTIES(wolfssl-test-rsa PROPERTIES OUTPUT_NAME "wolfssl-test.elf")
+SET_TARGET_PROPERTIES(wolfssl-test-rsa PROPERTIES OUTPUT_NAME "wolfssl-test-rsa.elf")
 
 TARGET_LINK_LIBRARIES(wolfssl-test-rsa -Wl,--start-group)
 TARGET_LINK_LIBRARIES(wolfssl-test-rsa ksdk-device-lib)
