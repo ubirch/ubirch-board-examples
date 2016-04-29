@@ -40,16 +40,15 @@ int main(void) {
   SysTick_Config(RUN_SYSTICK_10MS);
   PRINTF("\r\n-- ISL29125 test\r\n");
 
-  i2c_init(I2C_FULL_SPEED);
+  i2c_init(I2C_STANDARD);
 
   if (!isl_reset()) {
     PRINTF("could not initialize ISL29125 RGB sensor\r\n");
   }
 
   // set sampling mode, ir filter and interrupt mode
-  isl_set(ISL_R_COLOR_MODE, ISL_MODE_RGB | ISL_MODE_375LUX | ISL_MODE_16BIT);
-  isl_set(ISL_R_FILTERING, ISL_FILTER_IR_MAX);
-  isl_set(ISL_R_INTERRUPT, ISL_INT_ON_THRSLD);
+  isl_set(ISL_R_COLOR_MODE, ISL_MODE_RGB | ISL_MODE_10KLUX | ISL_MODE_16BIT);
+  isl_set(ISL_R_FILTERING, ISL_FILTER_IR_NONE);
 
   uint8_t color_mode = isl_get(ISL_R_COLOR_MODE);
   uint8_t filter_mode = isl_get(ISL_R_FILTERING);
@@ -63,24 +62,27 @@ int main(void) {
   while (true) {
     // wait for the conversion cycle to be done, this just indicates there is a cycle
     // in progress. the actual r,g,b values are always available from the last cycle
-    while (!(isl_get(ISL_R_STATUS) & ISL_STATUS_ADC_DONE)) PUTCHAR('%');
+    for (uint8_t colors = 0; colors < 3; colors++) {
+      uint8_t timeout = 150;
+      while (!(isl_get(ISL_R_STATUS) & ISL_STATUS_ADC_DONE) && --timeout) BusyWait100us(1);
+      PUTCHAR('%');
+    }
     PRINTF("\r\n");
 
     // read the full 36 or 48 bit color
-    printf("48bit: ");
+    PRINTF("48bit: ");
     rgb48_t rgb48;
     isl_read_rgb48(&rgb48);
-    printf("0x%04x%04x%04x rgb48(%u,%u,%u)\r\n", rgb48.red, rgb48.green, rgb48.blue, rgb48.red, rgb48.green, rgb48.blue);
+    PRINTF("0x%04x%04x%04x rgb48(%u,%u,%u)\r\n", rgb48.red, rgb48.green, rgb48.blue, rgb48.red, rgb48.green, rgb48.blue);
 
-    printf("24bit: ");
+    PRINTF("24bit: ");
     rgb24_t rgb24;
     isl_read_rgb24(&rgb24);
-    printf("0x%02x%02x%02x rgb24(%u,%u,%u)\r\n", rgb24.red, rgb24.green, rgb24.blue, rgb24.red, rgb24.green, rgb24.blue);
+    PRINTF("0x%02x%02x%02x rgb24(%u,%u,%u)\r\n", rgb24.red, rgb24.green, rgb24.blue, rgb24.red, rgb24.green, rgb24.blue);
 
-    BusyWait100us(50000);
+    BusyWait100us(25000);
   }
 
-  I2C_MasterStop(I2C2);
   I2C_MasterDeinit(I2C2);
 
   return 0;

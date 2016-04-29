@@ -65,12 +65,12 @@ void ssd1306_reset(EXTPIN_T reset_pin) {
 }
 
 void ssd1306_cmd(uint8_t address, uint8_t command) {
-  i2c_write_reg(address, 0x00, &command, 1);
+  i2c_write(address, 0x00, &command, 1);
 }
 
 
 void ssd1306_data(uint8_t address, uint8_t *data, size_t size) {
-  i2c_write_reg(address, 0x40, data, size);
+  i2c_write(address, 0x40, data, size);
 }
 
 //== higher level functions ================================
@@ -89,7 +89,7 @@ void ssd1306_clear(uint8_t address) {
   for (uint8_t page = 0; page < 8; page++) {
     ssd1306_cmd(address, (uint8_t) 0xb0 | page);
     ssd1306_cmd(address, 0x00);
-    i2c_write_reg(address, 0x40, cleared_buffer, 128);
+    i2c_write(address, 0x40, cleared_buffer, 128);
   }
 }
 

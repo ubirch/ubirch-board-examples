@@ -15,13 +15,4 @@ TARGET_LINK_LIBRARIES(rgbsensor gcc)
 TARGET_LINK_LIBRARIES(rgbsensor nosys)
 TARGET_LINK_LIBRARIES(rgbsensor -Wl,--end-group)
 
-# MAP FILE
-SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG}  -Xlinker -Map=rgbsensor.map")
-SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Xlinker -Map=rgbsensor.map")
-
-# BIN AND HEX
-ADD_CUSTOM_COMMAND(TARGET rgbsensor POST_BUILD COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:rgbsensor> $<TARGET_FILE_DIR:rgbsensor>/rgbsensor.hex)
-ADD_CUSTOM_COMMAND(TARGET rgbsensor POST_BUILD COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:rgbsensor> $<TARGET_FILE_DIR:rgbsensor>/rgbsensor.bin)
-ADD_CUSTOM_COMMAND(TARGET rgbsensor POST_BUILD COMMAND cp $<TARGET_FILE_DIR:rgbsensor>/rgbsensor.bin ${CMAKE_CURRENT_SOURCE_DIR})
-ADD_CUSTOM_COMMAND(TARGET rgbsensor POST_BUILD COMMAND cp $<TARGET_FILE_DIR:rgbsensor>/rgbsensor.elf ${CMAKE_CURRENT_SOURCE_DIR})
-#ADD_CUSTOM_TARGET(burn COMMAND [ -d /Volumes/MBED ] && cp ${CMAKE_CURRENT_SOURCE_DIR}/rgbsensor.bin /Volumes/MBED DEPENDS rgbsensor)
+prepare_flash(rgbsensor)
