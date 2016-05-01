@@ -34,13 +34,51 @@ void SysTick_Handler() {
   LED_Write((counter % 100) < 10);
 }
 
+void test() {
+  uint8_t device_id = i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_DEVICE_ID);
+  if (device_id != ISL_DEVICE_ID) PRINTF("device id: 0x%02x (should be 0x7d)\r\n", device_id);
+}
+
 
 int main(void) {
   BOARD_Init();
   SysTick_Config(RUN_SYSTICK_10MS);
   PRINTF("\r\n-- ISL29125 test\r\n");
 
-  i2c_init(I2C_STANDARD);
+  i2c_init(I2C_FULL_SPEED);
+  test();
+
+
+  rgb48_t color;
+  while(1) {
+    uint8_t reset = ISL_RESET;
+    i2c_error("reset", i2c_write(ISL_DEVICE_ADDRESS, 0x00, &reset, 1));
+    I2C_MasterStop(I2C2);
+
+    isl_set(ISL_R_COLOR_MODE, ISL_MODE_RGB | ISL_MODE_375LUX | ISL_MODE_16BIT);
+    isl_set(ISL_R_FILTERING, ISL_FILTER_IR_MAX);
+
+    uint8_t status = 0x00;
+//    for(uint8_t n = 1; n < 8; n++) {
+      for (uint8_t i = 0; i < 3; i++) {
+        do {
+          BusyWait100us(100);
+          status = i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_STATUS);
+        } while (!(status & ISL_STATUS_ADC_DONE));
+      }
+//    }
+
+    isl_read_rgb48(&color);
+
+    PRINTF("RGB(%08b, %lu,%lu,%lu)\e[K\r", status, color.red, color.green, color.blue);
+
+    isl_set(ISL_R_COLOR_MODE, ISL_MODE_POWERDOWN);
+
+    BusyWait100us(2000);
+  }
+
+
+  return 0;
 
   if (!isl_reset()) {
     PRINTF("could not initialize ISL29125 RGB sensor\r\n");
@@ -73,12 +111,14 @@ int main(void) {
     PRINTF("48bit: ");
     rgb48_t rgb48;
     isl_read_rgb48(&rgb48);
-    PRINTF("0x%04x%04x%04x rgb48(%u,%u,%u)\r\n", rgb48.red, rgb48.green, rgb48.blue, rgb48.red, rgb48.green, rgb48.blue);
+    PRINTF("0x%04x%04x%04x rgb48(%u,%u,%u)\r\n", rgb48.red, rgb48.green, rgb48.blue, rgb48.red, rgb48.green,
+           rgb48.blue);
 
     PRINTF("24bit: ");
     rgb24_t rgb24;
     isl_read_rgb24(&rgb24);
-    PRINTF("0x%02x%02x%02x rgb24(%u,%u,%u)\r\n", rgb24.red, rgb24.green, rgb24.blue, rgb24.red, rgb24.green, rgb24.blue);
+    PRINTF("0x%02x%02x%02x rgb24(%u,%u,%u)\r\n", rgb24.red, rgb24.green, rgb24.blue, rgb24.red, rgb24.green,
+           rgb24.blue);
 
     BusyWait100us(25000);
   }

@@ -79,11 +79,12 @@
 #define OLED_VCOM_DESELECT      0xDB
 // =================================
 
+#include <fsl_gpio.h>
 
 /**
  * Reset the controller.
  */
-void ssd1306_reset(EXTPIN_T reset_pin);
+void ssd1306_reset(GPIO_Type *gpio, uint32_t reset_pin);
 
 /**
  * Send a command to the OLED display controller.

@@ -1,8 +1,14 @@
-/**
- * Most simple test code to run on the ubirch#1.
+/*!
+ * @brief ubirch#1 r0.2 board specific initialization functions
+ *
+ * This file just contains some references to the initialization and support
+ * functions that are defined as inlinebale in the corresponding header file.
+ *
+ * The declaration of extern here will ensure that the compiler may choose
+ * when to inline and when to copy the code.
  *
  * @author Matthias L. Jugel
- * @date 2016-04-01
+ * @date 2016-05-01
  *
  * Copyright 2016 ubirch GmbH (https://ubirch.com)
  *
@@ -19,27 +25,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <board.h>
 
-void SysTick_Handler() {
-  static uint32_t counter = 0;
-  counter++;
-  BOARD_LED0((counter % 100) < 10);
-}
+#include "board.h"
 
-int main(void) {
-  board_init();
-  board_console_init(BOARD_DEBUG_BAUD);
-
-  SysTick_Config(SystemCoreClock / 100U);
-
-  PRINTF("WELCOME!\r\n");
-  while(true) {
-    int ch =  GETCHAR();
-    if(ch == '\r') PUTCHAR('\n');
-    PUTCHAR(ch);
-  }
-}
+extern void board_init();
+extern void board_nmi_disable();
+extern status_t board_console_init(uint32_t baud);

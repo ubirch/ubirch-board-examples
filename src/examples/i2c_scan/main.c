@@ -25,7 +25,6 @@
  * limitations under the License.
  */
 
-#include <stdint.h>
 #include <board.h>
 #include <stdio.h>
 #include <i2c.h>
@@ -33,18 +32,19 @@
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
-  LED_Write((counter % 100) < 10);
+  BOARD_LED0((counter % 100) < 10);
 }
 
 int main(void) {
-  BOARD_Init();
-  SysTick_Config(RUN_SYSTICK_10MS);
+  board_init();
+  board_console_init(BOARD_DEBUG_BAUD);
 
-  i2c_init(I2C_FULL_SPEED);
+  SysTick_Config(SystemCoreClock / 100U);
 
-  while(true) {
-    // Do a transfer and stop for each of the addresses possible
-    // output found device addresses or errors
+
+  while (true) {
+    i2c_init(I2C_STANDARD);
+
     for (uint8_t address = 0x01; address <= 0x7f; address++) {
       PRINTF("Scanning for device 0x%02x: \e[K", address);
 
@@ -72,13 +72,9 @@ int main(void) {
           PRINTF("ERROR %0d\r", status);
               break;
       }
-      BusyWait100us(10);
+      delay(1);
     }
+
+    i2c_deinit();
   }
-
-  i2c_deinit();
-
-  PRINTF("\e[KScanning done.\r\n");
-
-  return 0;
 }

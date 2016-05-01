@@ -1,10 +1,10 @@
 #include <stdint.h>
-#include <board.h>
 #include <stdio.h>
-#include <extpin.h>
 #include <ctype.h>
 #include "ssd1306.h"
 #include <i2c.h>
+#include <utilities/fsl_debug_console.h>
+#include <board.h>
 #include "font5x5.h"
 
 void oled_invert(int row, int column);
@@ -14,23 +14,29 @@ void oled_putc(int row, int column, char c);
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
-  LED_Write((counter % 100) < 10);
+  BOARD_LED0((counter % 100) < 10);
 }
 
 uint8_t buffer[64 * 6];
 
 int main(void) {
-  BOARD_Init();
-  SysTick_Config(RUN_SYSTICK_10MS);
+  board_init();
+  board_console_init(BOARD_DEBUG_BAUD);
+
+  SysTick_Config(SystemCoreClock / 100U);
+
   PRINTF("\r\n-- SSD1306 test\r\n");
 
   // initialize i2c
   i2c_init(I2C_FAST_MODE);
 
-  // reset oled display
-  ssd1306_reset(EXTPIN_3);
+  // enable reset pin clock, mux correcly and reset oled display
+  CLOCK_EnableClock(kCLOCK_PortB);
+  PORT_SetPinMux(PORTB, 9, kPORT_MuxAlt3);
 
-  BusyWait100us(1000);
+  ssd1306_reset(GPIOB, 9);
+
+  delay(1);
 
   const status_t status = i2c_ping(OLED_DEVICE_ADDRESS);
   if (status == kStatus_Success) {

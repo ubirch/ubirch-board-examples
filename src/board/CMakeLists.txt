@@ -1,0 +1,10 @@
+if (BOARD STREQUAL "ubirch#1 r0.2")
+  add_subdirectory(ubirch1r02)
+elseif (BOARD STREQUAL "FRDM-K82F")
+  add_subdirectory(frdm_k82f)
+elseif (BOARD STREQUAL "FRDM-KL82Z")
+  add_subdirectory(frdm_k82f)
+else ()
+  message(FATAL_ERROR "Please set a board type: -DBOARD=<...> (i.e. ubirch#1 r0.1, FRDM-K82F, FRDM-KL82Z)")
+endif ()
+

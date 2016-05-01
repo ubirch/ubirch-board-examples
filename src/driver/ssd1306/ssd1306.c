@@ -19,20 +19,33 @@
  * limitations under the License.
  */
 
-#include <extpin.h>
-#include <board.h>
-#include "ssd1306.h"
 #include <i2c.h>
+#include <drivers/fsl_gpio.h>
+#include <drivers/fsl_port.h>
+#include "ssd1306.h"
 
 // == low level functions ==================================
+static inline void _delay_100us(uint32_t us100) {
+  uint32_t ticks = SystemCoreClock / 100000U * us100;
+  while (ticks--) __asm("nop");
 
-void ssd1306_reset(EXTPIN_T reset_pin) {
-  ExtPin_SetOutput(reset_pin);
-  ExtPin_Write(reset_pin, true);
-  BusyWait100us(1);
-  ExtPin_Write(reset_pin, false);
-  BusyWait100us(1);
-  ExtPin_Write(reset_pin, true);
+}
+
+void BusyWait100us(uint32_t us100) {
+  uint32_t wait = (SystemCoreClock / 100000) * us100;
+  for (volatile uint32_t i=0; i<wait; i++) {}
+}
+
+
+void ssd1306_reset(GPIO_Type *gpio, uint32_t reset_pin) {
+  const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
+  GPIO_PinInit(gpio, reset_pin, &OUTFALSE);
+
+  GPIO_WritePinOutput(gpio, reset_pin, true);
+  BusyWait100us(2);
+  GPIO_WritePinOutput(gpio, reset_pin, false);
+  BusyWait100us(2);
+  GPIO_WritePinOutput(gpio, reset_pin, true);
 
   // software configuration according to specs
   ssd1306_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_OFF);
