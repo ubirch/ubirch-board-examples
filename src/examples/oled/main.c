@@ -30,10 +30,9 @@ int main(void) {
   // initialize i2c
   i2c_init(I2C_FAST_MODE);
 
-  // enable reset pin clock, mux correcly and reset oled display
+  // enable reset pin clock, mux as GPIO and reset oled display
   CLOCK_EnableClock(kCLOCK_PortB);
-  PORT_SetPinMux(PORTB, 9, kPORT_MuxAlt3);
-
+  PORT_SetPinMux(PORTB, 9, kPORT_MuxAsGpio);
   ssd1306_reset(GPIOB, 9);
 
   delay(1);

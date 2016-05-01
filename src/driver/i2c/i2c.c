@@ -34,7 +34,7 @@ void i2c_init(i2c_speed_t speed) {
   i2c_master_config_t i2c_config;
   I2C_MasterGetDefaultConfig(&i2c_config);
   i2c_config.baudRate_Bps = speed;
-  I2C_MasterInit(I2C2, &i2c_config, CLOCK_GetFreq(kCLOCK_BusClk));
+  I2C_MasterInit(I2C2, &i2c_config, CLOCK_GetFreq(I2C2_CLK_SRC));
 }
 
 void i2c_deinit() {

@@ -25,26 +25,20 @@
 #include "ssd1306.h"
 
 // == low level functions ==================================
-static inline void _delay_100us(uint32_t us100) {
-  uint32_t ticks = SystemCoreClock / 100000U * us100;
+static inline void _delay_us(uint32_t us) {
+  uint32_t ticks = SystemCoreClock / 10000000U * us;
   while (ticks--) __asm("nop");
-
 }
-
-void BusyWait100us(uint32_t us100) {
-  uint32_t wait = (SystemCoreClock / 100000) * us100;
-  for (volatile uint32_t i=0; i<wait; i++) {}
-}
-
 
 void ssd1306_reset(GPIO_Type *gpio, uint32_t reset_pin) {
   const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
   GPIO_PinInit(gpio, reset_pin, &OUTFALSE);
 
+  // reset sequence
   GPIO_WritePinOutput(gpio, reset_pin, true);
-  BusyWait100us(2);
+  _delay_us(100);
   GPIO_WritePinOutput(gpio, reset_pin, false);
-  BusyWait100us(2);
+  _delay_us(100);
   GPIO_WritePinOutput(gpio, reset_pin, true);
 
   // software configuration according to specs
