@@ -23,69 +23,49 @@
  */
 #include <stdint.h>
 #include <stdbool.h>
-#include <board.h>
 #include <stdio.h>
 #include <isl29125.h>
 #include <i2c.h>
+#include <utilities/fsl_debug_console.h>
+#include <board.h>
+
+#define ISL_327LUX_MAX 65000
+#define ISL_10KLUX_MIN 8000
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
-  LED_Write((counter % 100) < 10);
+  BOARD_LED0((counter % 100) < 10);
 }
 
-void test() {
-  uint8_t device_id = i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_DEVICE_ID);
-  if (device_id != ISL_DEVICE_ID) PRINTF("device id: 0x%02x (should be 0x7d)\r\n", device_id);
-}
+void sample_rgb(rgb48_t *color, uint8_t color_mode) {
+  // set sampling mode, ir filter and interrupt mode
+  isl_set(ISL_R_FILTERING, ISL_FILTER_IR_MAX);
+  isl_set(ISL_R_COLOR_MODE, (uint8_t) (ISL_MODE_RGB | color_mode | ISL_MODE_16BIT));
 
+  // give the device time to sample (2 fill RGB cycles (100ms per color))
+  // well, theoretically, fact is, lowering the delay to 400ms will make it
+  // almost always miss blue
+  delay(600);
+
+  isl_read_rgb48(color);
+}
 
 int main(void) {
-  BOARD_Init();
-  SysTick_Config(RUN_SYSTICK_10MS);
+  board_init();
+  board_console_init(BOARD_DEBUG_BAUD);
+
+  SysTick_Config(SystemCoreClock / 100U);
   PRINTF("\r\n-- ISL29125 test\r\n");
 
   i2c_init(I2C_FULL_SPEED);
-  test();
-
-
-  rgb48_t color;
-  while(1) {
-    uint8_t reset = ISL_RESET;
-    i2c_error("reset", i2c_write(ISL_DEVICE_ADDRESS, 0x00, &reset, 1));
-    I2C_MasterStop(I2C2);
-
-    isl_set(ISL_R_COLOR_MODE, ISL_MODE_RGB | ISL_MODE_375LUX | ISL_MODE_16BIT);
-    isl_set(ISL_R_FILTERING, ISL_FILTER_IR_MAX);
-
-    uint8_t status = 0x00;
-//    for(uint8_t n = 1; n < 8; n++) {
-      for (uint8_t i = 0; i < 3; i++) {
-        do {
-          BusyWait100us(100);
-          status = i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_STATUS);
-        } while (!(status & ISL_STATUS_ADC_DONE));
-      }
-//    }
-
-    isl_read_rgb48(&color);
-
-    PRINTF("RGB(%08b, %lu,%lu,%lu)\e[K\r", status, color.red, color.green, color.blue);
-
-    isl_set(ISL_R_COLOR_MODE, ISL_MODE_POWERDOWN);
-
-    BusyWait100us(2000);
-  }
-
-
-  return 0;
 
   if (!isl_reset()) {
     PRINTF("could not initialize ISL29125 RGB sensor\r\n");
   }
 
   // set sampling mode, ir filter and interrupt mode
-  isl_set(ISL_R_COLOR_MODE, ISL_MODE_RGB | ISL_MODE_10KLUX | ISL_MODE_16BIT);
+  isl_set(ISL_R_COLOR_MODE, ISL_MODE_RGB | ISL_MODE_375LUX | ISL_MODE_16BIT);
   isl_set(ISL_R_FILTERING, ISL_FILTER_IR_NONE);
 
   uint8_t color_mode = isl_get(ISL_R_COLOR_MODE);
@@ -97,30 +77,35 @@ int main(void) {
 
   PRINTF("reading RGB values from sensor\r\n");
   PRINTF("'%%' indicates the chip is still in a conversion cyle, so we wait\r\n");
+  uint8_t sensitivity = ISL_MODE_375LUX;
   while (true) {
-    // wait for the conversion cycle to be done, this just indicates there is a cycle
-    // in progress. the actual r,g,b values are always available from the last cycle
-    for (uint8_t colors = 0; colors < 3; colors++) {
-      uint8_t timeout = 150;
-      while (!(isl_get(ISL_R_STATUS) & ISL_STATUS_ADC_DONE) && --timeout) BusyWait100us(1);
-      PUTCHAR('%');
-    }
-    PRINTF("\r\n");
-
-    // read the full 36 or 48 bit color
-    PRINTF("48bit: ");
     rgb48_t rgb48;
-    isl_read_rgb48(&rgb48);
-    PRINTF("0x%04x%04x%04x rgb48(%u,%u,%u)\r\n", rgb48.red, rgb48.green, rgb48.blue, rgb48.red, rgb48.green,
-           rgb48.blue);
 
-    PRINTF("24bit: ");
-    rgb24_t rgb24;
-    isl_read_rgb24(&rgb24);
-    PRINTF("0x%02x%02x%02x rgb24(%u,%u,%u)\r\n", rgb24.red, rgb24.green, rgb24.blue, rgb24.red, rgb24.green,
-           rgb24.blue);
+    if (!isl_reset()) {
+      PRINTF("could not initialize ISL29125 RGB sensor\r\n");
+    }
 
-    BusyWait100us(25000);
+    // do an initial sampling
+    sample_rgb(&rgb48, sensitivity);
+
+    // auto-compensate for brightness
+    if (sensitivity == ISL_MODE_375LUX &&
+        rgb48.red > ISL_327LUX_MAX && rgb48.green > ISL_327LUX_MAX && rgb48.blue > ISL_327LUX_MAX) {
+      sensitivity = ISL_MODE_10KLUX;
+      sample_rgb(&rgb48, sensitivity);
+    } else if (sensitivity == ISL_MODE_10KLUX &&
+               rgb48.red < ISL_10KLUX_MIN && rgb48.green < ISL_10KLUX_MIN && rgb48.blue < ISL_10KLUX_MIN) {
+      sensitivity = ISL_MODE_375LUX;
+      sample_rgb(&rgb48, sensitivity);
+    }
+
+    PRINTF("\r%6s 0x%04x%04x%04x rgb48(%lu,%lu,%lu) rgb24(%u,%u,%u)\e[K",
+           sensitivity == ISL_MODE_375LUX ? "375LUX" : "10KLUX",
+           rgb48.red, rgb48.green, rgb48.blue,
+           rgb48.red, rgb48.green, rgb48.blue,
+           rgb48.red >> 8, rgb48.green >> 8, rgb48.blue >> 8);
+
+    isl_set(ISL_R_COLOR_MODE, ISL_MODE_POWERDOWN);
   }
 
   I2C_MasterDeinit(I2C2);

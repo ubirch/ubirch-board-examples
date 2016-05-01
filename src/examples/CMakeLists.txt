@@ -3,7 +3,7 @@
 add_subdirectory(i2c_scan)
 #add_subdirectory(lpuart)
 add_subdirectory(oled)
-#add_subdirectory(rgbsensor)
+add_subdirectory(rgbsensor)
 #add_subdirectory(rtc)
 add_subdirectory(test)
 #add_subdirectory(wolfssl-benchmark)

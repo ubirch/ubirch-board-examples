@@ -70,18 +70,15 @@ void isl_read_rgb48(rgb48_t *rgb48) {
   rgb48->red = i2c_read_reg16(ISL_DEVICE_ADDRESS, ISL_R_RED_L);
   rgb48->green = i2c_read_reg16(ISL_DEVICE_ADDRESS, ISL_R_GREEN_L);
   rgb48->blue = i2c_read_reg16(ISL_DEVICE_ADDRESS, ISL_R_BLUE_L);
-//  rgb48->red = (i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_RED_H) << 8) + i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_RED_L);
-//  rgb48->green = (i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_GREEN_H) << 8) + i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_GREEN_L);
-//  rgb48->blue = (i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_BLUE_H) << 8) + i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_BLUE_L);
-
 }
 
 void isl_read_rgb24(rgb24_t *rgb24) {
-  uint8_t data[6];
-  i2c_read(ISL_DEVICE_ADDRESS, ISL_R_GREEN_L, data, 6);
+  rgb48_t rgb48;
   const int shift = (i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_COLOR_MODE) & ISL_MODE_12BIT) ? 4 : 8;
 
-  rgb24->red = (data[4] << 8 | data[5]) >> shift;
-  rgb24->green = (data[2] << 8 | data[3]) >> shift;
-  rgb24->blue = (data[0] << 8 | data[1]);
+  isl_read_rgb48(&rgb48);
+
+  rgb24->red = (uint8_t) (rgb48.red >> shift);
+  rgb24->green = (uint8_t) (rgb48.green >> shift);
+  rgb24->blue = (uint8_t) (rgb48.blue >> shift);
 }

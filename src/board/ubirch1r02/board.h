@@ -95,7 +95,7 @@ static inline status_t board_console_init(uint32_t baud) {
  * @param ms the milliseconds to delay execution
  */
 static inline void delay(uint32_t ms) {
-  uint32_t ticks = (SystemCoreClock / 1000) * ms;
+  volatile uint32_t ticks = (SystemCoreClock / 100000) * ms * 10;
   while (ticks--) {
     __asm("nop");
   }
