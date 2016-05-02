@@ -143,7 +143,7 @@ uint8_t isl_get(uint8_t reg);
  * Reset the sensor.
  * A non-zero return indicates an error condition.
  */
-uint8_t isl_reset(void);
+bool isl_reset(void);
 
 uint16_t isl_read_red(void);
 

@@ -33,14 +33,14 @@ uint8_t isl_get(uint8_t reg) {
   return i2c_read_reg(ISL_DEVICE_ADDRESS, reg);
 }
 
-uint8_t isl_reset(void) {
+bool isl_reset(void) {
   // check device is there
   uint8_t device_id = i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_DEVICE_ID);
   if (device_id != ISL_DEVICE_ID) {
 #ifndef NDEBUG
     PRINTF("device id: 0x%02x (should be 0x7d)\r\n", device_id);
 #endif
-    return 0;
+    return false;
   }
 
   // reset and make sure we are actually done resetting
@@ -48,21 +48,7 @@ uint8_t isl_reset(void) {
   status_t status = i2c_write(ISL_DEVICE_ADDRESS, 0x00, &reset, 1);
   I2C_MasterStop(I2C2);
 
-#ifndef NDEBUG
-  i2c_error("isl_reset()", status);
-#endif
-  // maybe not necessary if correct stop signal is sent above
-  uint8_t check, timeout = 5 /* do the check for 5 times */;
-  do {
-    check = 0x00;
-    check |= i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_COLOR_MODE);
-    check |= i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_FILTERING);
-    check |= i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_INTERRUPT);
-    check |= i2c_read_reg(ISL_DEVICE_ADDRESS, ISL_R_STATUS);
-  } while (check && --timeout);
-  if (check) return 0;
-
-  return 1;
+  return status == kStatus_Success;
 }
 
 // TODO: burst read 48 bit

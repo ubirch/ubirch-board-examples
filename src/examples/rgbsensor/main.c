@@ -60,9 +60,7 @@ int main(void) {
 
   i2c_init(I2C_FULL_SPEED);
 
-  if (!isl_reset()) {
-    PRINTF("could not initialize ISL29125 RGB sensor\r\n");
-  }
+  if (isl_reset()) PRINTF("could not initialize ISL29125 RGB sensor\r\n");
 
   // set sampling mode, ir filter and interrupt mode
   isl_set(ISL_R_COLOR_MODE, ISL_MODE_RGB | ISL_MODE_375LUX | ISL_MODE_16BIT);
@@ -106,6 +104,8 @@ int main(void) {
            rgb48.red >> 8, rgb48.green >> 8, rgb48.blue >> 8);
 
     isl_set(ISL_R_COLOR_MODE, ISL_MODE_POWERDOWN);
+
+    delay(100);
   }
 
   I2C_MasterDeinit(I2C2);
