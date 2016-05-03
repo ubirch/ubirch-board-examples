@@ -45,7 +45,7 @@ void print_buffer_hex(const byte *out, int len) {
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
-  LED_Write((counter % 100) < 10);
+  BOARD_LED0((counter % 100) < 10);
 }
 
 void print_public_key(RsaKey *key) {
@@ -91,7 +91,9 @@ int init_recipient_public_key(byte *key, size_t length) {
 }
 
 int main(void) {
-  BOARD_Init();
+  board_init();
+  board_console_init(BOARD_DEBUG_BAUD);
+
   SysTick_Config(SystemCoreClock / 100 - 1);
 
   PRINTF("ubirch #1 r0.2 RSA encryption/signature test\r\n");

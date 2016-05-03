@@ -8,7 +8,7 @@
  * when to inline and when to copy the code.
  *
  * @author Matthias L. Jugel
- * @date 2016-05-01
+ * @date 2016-05-03
  *
  * Copyright 2016 ubirch GmbH (https://ubirch.com)
  *

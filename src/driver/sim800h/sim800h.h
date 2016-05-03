@@ -29,6 +29,9 @@
 #define UBIRCH_SIM800_H
 
 #include <board.h>
+#ifndef BOARD_CELL_PORT
+#  error "No PORT found for cell phone chip. please configure ports/pins/clocks!"
+#endif
 
 /*!
  * Enable the power domain for the SIM800H.

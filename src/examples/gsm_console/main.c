@@ -26,12 +26,12 @@ void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
   bool on = (counter % 50) < 40;  //long on
-  LED_Write(on);
+  BOARD_LED0(on);
 }
 
 int main(void) {
-  BOARD_Init();
-  SysTick_Config(RUN_SYSTICK_10MS);
+  board_init();
+  SysTick_Config(SystemCoreClock / 100U);
 
   sim800h_enable();
   sim800h_power_enable();

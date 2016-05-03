@@ -2,7 +2,7 @@
  * @brief FRDM-K82F board specific defines
  *
  * @author Matthias L. Jugel
- * @date 2016-05-01
+ * @date 2016-05-03
  *
  * Copyright 2016 ubirch GmbH (https://ubirch.com)
  *
@@ -44,7 +44,6 @@
 #define BOARD_LED2_PORT_CLOCK   kCLOCK_PortC
 #define BOARD_LED2_PIN          10U
 
-#define BOARD_LED(n, on)        GPIO_WritePinOutput(BOARD_LED##n##_GPIO, BOARD_LED##n##_PIN, !(on))
 #define BOARD_LED0(on)          GPIO_WritePinOutput(BOARD_LED0_GPIO, BOARD_LED0_PIN, !(on))
 #define BOARD_LED1(on)          GPIO_WritePinOutput(BOARD_LED1_GPIO, BOARD_LED1_PIN, !(on))
 #define BOARD_LED2(on)          GPIO_WritePinOutput(BOARD_LED2_GPIO, BOARD_LED2_PIN, !(on))

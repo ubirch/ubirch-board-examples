@@ -20,8 +20,11 @@
  * limitations under the License.
  */
 
+#include "cell.h"
+
 #ifndef _UBIRCH1R01_BOARD_H_
 #define _UBIRCH1R01_BOARD_H_
+
 
 // amount of LEDs available on the board
 #define BOARD_LEDS              1

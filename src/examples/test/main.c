@@ -44,9 +44,9 @@ int main(void) {
 
   PRINTF("BOARD TEST\r\n");
 #ifdef BOARD_LED0
-  BOARD_LED(0, true);
+  BOARD_LED0(true);
   delay(1000);
-  BOARD_LED(0, false);
+  BOARD_LED0(false);
   delay(500);
 #endif
 #ifdef BOARD_LED1

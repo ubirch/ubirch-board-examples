@@ -1,17 +1,17 @@
 # ADD_EXECUTABLE
-ADD_EXECUTABLE(rtc main.c)
+add_executable(rtc main.c)
+target_link_libraries(rtc board)
 
-SET_TARGET_PROPERTIES(rtc PROPERTIES OUTPUT_NAME "rtc.elf")
+set_target_properties(rtc PROPERTIES OUTPUT_NAME "rtc.elf")
 
-TARGET_LINK_LIBRARIES(rtc -Wl,--start-group)
-TARGET_LINK_LIBRARIES(rtc ksdk-device-lib)
-TARGET_LINK_LIBRARIES(rtc ksdk-mmcau)
-TARGET_LINK_LIBRARIES(rtc ubirch-firmware)
+target_link_libraries(rtc -Wl,--start-group)
+target_link_libraries(rtc ksdk-device-lib)
+target_link_libraries(rtc ksdk-mmcau)
 # SYSTEM LIBRARIES
-TARGET_LINK_LIBRARIES(rtc m)
-TARGET_LINK_LIBRARIES(rtc c)
-TARGET_LINK_LIBRARIES(rtc gcc)
-TARGET_LINK_LIBRARIES(rtc nosys)
-TARGET_LINK_LIBRARIES(rtc -Wl,--end-group)
+target_link_libraries(rtc m)
+target_link_libraries(rtc c)
+target_link_libraries(rtc gcc)
+target_link_libraries(rtc nosys)
+target_link_libraries(rtc -Wl,--end-group)
 
 prepare_flash(rtc)

@@ -180,7 +180,7 @@ void print_buffer_hex(const byte *out, int len) {
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
-  LED_Write((counter % 100) < 10);
+  BOARD_LED0((counter % 100) < 10);
 
 }
 
@@ -274,8 +274,10 @@ int init_recipient_public_key(byte *key, size_t length) {
 
 
 int main(void) {
-  BOARD_Init();
-  SysTick_Config(RUN_SYSTICK_10MS);
+  board_init();
+  board_console_init(BOARD_DEBUG_BAUD);
+
+  SysTick_Config(SystemCoreClock / 100U);
   init_pit();
 
   PRINTF("ubirch #1 r0.2 RSA encryption/signature benchmark\r\n");

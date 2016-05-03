@@ -19,10 +19,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "sim800h.h"
 
 #ifndef NDEBUG
 #include <utilities/fsl_debug_console.h>
+#include <drivers/fsl_lpuart.h>
+
 #else
 # undef PRINTF
 # define PRINTF(...)
@@ -36,8 +39,8 @@ static volatile int gsmRxIndex, gsmRxHead;
  * The
  */
 void GSM_UART_IRQ_HANDLER(void) {
-  if ((kLPUART_RxDataRegFullFlag) & LPUART_GetStatusFlags(GSM_UART)) {
-    uint8_t data = LPUART_ReadByte(GSM_UART);
+  if ((kLPUART_RxDataRegFullFlag) & LPUART_GetStatusFlags(BOARD_CELL_UART)) {
+    uint8_t data = LPUART_ReadByte(BOARD_CELL_UART);
 
     // it may be necessary to create a critical section here, but
     // right now it didn't hurt us to not disable interrupts
@@ -83,47 +86,50 @@ size_t sim800h_readline(char *buffer, size_t max) {
 }
 
 void sim800h_writeline(const char *buffer) {
-  LPUART_WriteBlocking(GSM_UART, (const uint8_t *) buffer, strlen(buffer));
-  LPUART_WriteBlocking(GSM_UART, (const uint8_t *) "\r\n", 2);
+  LPUART_WriteBlocking(BOARD_CELL_UART, (const uint8_t *) buffer, strlen(buffer));
+  LPUART_WriteBlocking(BOARD_CELL_UART, (const uint8_t *) "\r\n", 2);
 }
 
 void sim800h_power_enable() {
   const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
-  // the clock enable for GSM_PWR_EN is done in board.c
-  GPIO_PinInit(GSM_PWR_EN_GPIO, GSM_PWR_EN_PIN, &OUTFALSE);
-  GPIO_WritePinOutput(GSM_PWR_EN_GPIO, GSM_PWR_EN_PIN, true);
+  // the clock enable for BOARD_CELL_PWR_EN is done in board.c
+  GPIO_PinInit(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, &OUTFALSE);
+  GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, true);
 
+  // TODO check power for GSM chip
+/*
   uint16_t bat;
   while ((bat = VBat_Read()) < 2000) {
     PRINTF("%d\r", bat);
   }
   PRINTF("%d\r\n", bat);
+*/
 }
 
 void sim800h_power_disable() {
-  GPIO_WritePinOutput(GSM_PWR_EN_GPIO, GSM_PWR_EN_PIN, false);
+  GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, false);
 }
 
 void sim800h_enable() {
   const gpio_pin_config_t OUTTRUE = {kGPIO_DigitalOutput, true};
   const gpio_pin_config_t IN = {kGPIO_DigitalInput, false};
 
-  // initialize GSM pins
-  CLOCK_EnableClock(GSM_PORT_CLOCK);
-  PORT_SetPinMux(GSM_PORT, GSM_UART_TX_PIN, GSM_UART_TX_ALT);
-  PORT_SetPinMux(GSM_PORT, GSM_UART_RX_PIN, GSM_UART_RX_ALT);
+  // initialize BOARD_CELL pins
+  CLOCK_EnableClock(BOARD_CELL_PORT_CLOCK);
+  PORT_SetPinMux(BOARD_CELL_PORT, BOARD_CELL_UART_TX_PIN, BOARD_CELL_UART_TX_ALT);
+  PORT_SetPinMux(BOARD_CELL_PORT, BOARD_CELL_UART_RX_PIN, BOARD_CELL_UART_RX_ALT);
 
-  PORT_SetPinMux(GSM_PORT, GSM_STATUS_PIN, GSM_STATUS_ALT);
-  GPIO_PinInit(GSM_GPIO, GSM_STATUS_PIN, &IN);
+  PORT_SetPinMux(BOARD_CELL_PORT, BOARD_CELL_STATUS_PIN, kPORT_MuxAsGpio);
+  GPIO_PinInit(BOARD_CELL_GPIO, BOARD_CELL_STATUS_PIN, &IN);
 
-  PORT_SetPinMux(GSM_PORT, GSM_RESET_PIN, GSM_RESET_ALT);
-  GPIO_PinInit(GSM_GPIO, GSM_RESET_PIN, &OUTTRUE);
+  PORT_SetPinMux(BOARD_CELL_PORT, BOARD_CELL_RESET_PIN, kPORT_MuxAsGpio);
+  GPIO_PinInit(BOARD_CELL_GPIO, BOARD_CELL_RESET_PIN, &OUTTRUE);
 
-  PORT_SetPinMux(GSM_PORT, GSM_PWRKEY_PIN, GSM_PWRKEY_ALT);
-  GPIO_PinInit(GSM_GPIO, GSM_PWRKEY_PIN, &OUTTRUE);
+  PORT_SetPinMux(BOARD_CELL_PORT, BOARD_CELL_PWRKEY_PIN, kPORT_MuxAsGpio);
+  GPIO_PinInit(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, &OUTTRUE);
 
-  PORT_SetPinMux(GSM_PORT, GSM_RI_PIN, GSM_RI_ALT);
-  GPIO_PinInit(GSM_GPIO, GSM_RI_PIN, &IN);
+  PORT_SetPinMux(BOARD_CELL_PORT, BOARD_CELL_RI_PIN, kPORT_MuxAsGpio);
+  GPIO_PinInit(BOARD_CELL_GPIO, BOARD_CELL_RI_PIN, &IN);
 
   // configure uart driver connected to the SIM800H
   lpuart_config_t lpuart_config;
@@ -131,17 +137,17 @@ void sim800h_enable() {
   lpuart_config.baudRate_Bps = 115200;
   lpuart_config.parityMode = kLPUART_ParityDisabled;
   lpuart_config.stopBitCount = kLPUART_OneStopBit;
-  LPUART_Init(GSM_UART, &lpuart_config, LPUART_BASE_CLOCK);
-  LPUART_EnableRx(GSM_UART, true);
-  LPUART_EnableTx(GSM_UART, true);
+  LPUART_Init(BOARD_CELL_UART, &lpuart_config, BOARD_CELL_PORT_CLOCK_FREQ);
+  LPUART_EnableRx(BOARD_CELL_UART, true);
+  LPUART_EnableTx(BOARD_CELL_UART, true);
 
-  LPUART_EnableInterrupts(GSM_UART, kLPUART_RxDataRegFullInterruptEnable);
-  EnableIRQ(GSM_UART_IRQ);
+  LPUART_EnableInterrupts(BOARD_CELL_UART, kLPUART_RxDataRegFullInterruptEnable);
+  EnableIRQ(BOARD_CELL_UART_IRQ);
 
   // power on the SIM800H
-  GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, true);
-  BusyWait100us(100); //10ms
-  GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, false);
-  BusyWait100us(11000); // 1.1s
-  GPIO_WritePinOutput(GSM_GPIO, GSM_PWRKEY_PIN, true);
+  GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, true);
+  delay(10); //10ms
+  GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, false);
+  delay(1100); // 1.1s
+  GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, true);
 }
