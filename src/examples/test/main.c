@@ -27,19 +27,47 @@
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
+#ifdef BOARD_LED0
   BOARD_LED0((counter % 100) < 10);
+#endif
+#ifdef BOARD_LED1
+  BOARD_LED1((counter % 200) < 50);
+#endif
+#ifdef BOARD_LED2
+  BOARD_LED2((counter % 500) < 100);
+#endif
 }
 
 int main(void) {
   board_init();
   board_console_init(BOARD_DEBUG_BAUD);
 
+  PRINTF("BOARD TEST\r\n");
+#ifdef BOARD_LED0
+  BOARD_LED(0, true);
+  delay(1000);
+  BOARD_LED(0, false);
+  delay(500);
+#endif
+#ifdef BOARD_LED1
+  BOARD_LED1(true);
+  delay(1000);
+  BOARD_LED1(false);
+  delay(500);
+#endif
+#ifdef BOARD_LED2
+  BOARD_LED2(true);
+  delay(1000);
+  BOARD_LED2(false);
+  delay(500);
+#endif
+
   SysTick_Config(SystemCoreClock / 100U);
 
-  PRINTF("WELCOME!\r\n");
-  while(true) {
-    int ch =  GETCHAR();
-    if(ch == '\r') PUTCHAR('\n');
+  PRINTF("DEBUG CONSOLE\r\n");
+  while (true) {
+    int ch = GETCHAR();
+    if (ch == '\r') PUTCHAR('\n');
     PUTCHAR(ch);
   }
 }

@@ -1,5 +1,5 @@
 /*!
- * @brief ubirch#1 r0.2 board specific initialization functions
+ * @brief FRDM-K82F board specific initialization functions
  *
  * Contains the declaration of initialization functions specific for the board.
  *
@@ -39,7 +39,7 @@
 #include <utilities/fsl_debug_console.h>
 
 // board specific includes
-#include "ubirch1r01.h"
+#include "frdm_k82f.h"
 #include "clock_config.h"
 
 /*!
@@ -50,21 +50,34 @@ static inline void board_init() {
 
   // enable led/button clock
   CLOCK_EnableClock(BOARD_LED0_PORT_CLOCK);
-  // enable external power switch clock
-  CLOCK_EnableClock(BOARD_PWR_EN_PORT_CLOCK);
+  CLOCK_EnableClock(BOARD_LED1_PORT_CLOCK);
+  CLOCK_EnableClock(BOARD_LED2_PORT_CLOCK);
+
+  CLOCK_EnableClock(BOARD_BUTTON0_PORT_CLOCK);
+  CLOCK_EnableClock(BOARD_BUTTON1_PORT_CLOCK);
+  CLOCK_EnableClock(BOARD_BUTTON2_PORT_CLOCK);
 
   // configure pins
-  const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
+  const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, 0};
   const gpio_pin_config_t IN = {kGPIO_DigitalInput, false};
 
   PORT_SetPinMux(BOARD_LED0_PORT, BOARD_LED0_PIN, kPORT_MuxAsGpio);
   GPIO_PinInit(BOARD_LED0_GPIO, BOARD_LED0_PIN, &OUTFALSE);
+  GPIO_WritePinOutput(BOARD_LED0_GPIO, BOARD_LED0_PIN, true);
+
+  PORT_SetPinMux(BOARD_LED1_PORT, BOARD_LED1_PIN, kPORT_MuxAsGpio);
+  GPIO_PinInit(BOARD_LED1_GPIO, BOARD_LED1_PIN, &OUTFALSE);
+  GPIO_WritePinOutput(BOARD_LED1_GPIO, BOARD_LED1_PIN, true);
+
+  PORT_SetPinMux(BOARD_LED2_PORT, BOARD_LED2_PIN, kPORT_MuxAsGpio);
+  GPIO_PinInit(BOARD_LED2_GPIO, BOARD_LED2_PIN, &OUTFALSE);
+  GPIO_WritePinOutput(BOARD_LED2_GPIO, BOARD_LED2_PIN, true);
 
   PORT_SetPinMux(BOARD_BUTTON0_PORT, BOARD_BUTTON0_PIN, kPORT_MuxAsGpio);
   GPIO_PinInit(BOARD_BUTTON0_GPIO, BOARD_BUTTON0_PIN, &IN);
 
-  PORT_SetPinMux(BOARD_PWR_EN_PORT, BOARD_PWR_EN_PIN, BOARD_PWR_EN_ALT);
-  GPIO_PinInit(BOARD_PWR_EN_GPIO, BOARD_PWR_EN_PIN, &OUTFALSE);
+  PORT_SetPinMux(BOARD_BUTTON1_PORT, BOARD_BUTTON1_PIN, kPORT_MuxAsGpio);
+  GPIO_PinInit(BOARD_BUTTON1_GPIO, BOARD_BUTTON1_PIN, &IN);
 }
 
 /*!
@@ -83,7 +96,7 @@ static inline void board_nmi_disable() {
  * @param baud the baud rate of the debug console
  */
 static inline status_t board_console_init(uint32_t baud) {
-  CLOCK_SetLpuartClock(1);
+  CLOCK_SetLpuartClock(2);
   CLOCK_EnableClock(BOARD_DEBUG_PORT_CLOCK);
   PORT_SetPinMux(BOARD_DEBUG_PORT, BOARD_DEBUG_TX_PIN, BOARD_DEBUG_TX_ALT);
   PORT_SetPinMux(BOARD_DEBUG_PORT, BOARD_DEBUG_RX_PIN, BOARD_DEBUG_RX_ALT);

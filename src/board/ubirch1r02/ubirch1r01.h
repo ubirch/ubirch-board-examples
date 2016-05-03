@@ -20,15 +20,17 @@
  * limitations under the License.
  */
 
-#ifndef _UBIRCH1R01E_BOARD_H_
-#define _UBIRCH1R01E_BOARD_H_
+#ifndef _UBIRCH1R01_BOARD_H_
+#define _UBIRCH1R01_BOARD_H_
+
+// amount of LEDs available on the board
+#define BOARD_LEDS              1
 
 // single on-board LED (PTD4)
 #define BOARD_LED0_PORT         PORTD
 #define BOARD_LED0_GPIO         GPIOD
 #define BOARD_LED0_PORT_CLOCK   kCLOCK_PortD
 #define BOARD_LED0_PIN          4
-#define BOARD_LED0_ALT          kPORT_MuxAsGpio
 
 #define BOARD_LED0(on)          GPIO_WritePinOutput(BOARD_LED0_GPIO, BOARD_LED0_PIN, (on))
 
@@ -36,15 +38,14 @@
 #define BOARD_BUTTON0_PORT      PORTD
 #define BOARD_BUTTON0_GPIO      GPIOD
 #define BOARD_BUTTON0_PIN       0
-#define BOARD_BUTTON0_ALT       kPORT_MuxAsGpio
 #define BOARD_BUTTON0_PORT_CLOCK kCLOCK_PortD
+#define BOARD_BUTTON0_IRQ       PORTD_IRQHandler
 
 // K82F NMI pin (PTA4)
 #define BOARD_NMI_PORT          PORTA
 #define BOARD_NMI_GPIO          GPIOA
 #define BOARD_NMI_PORT_CLOCK    kCLOCK_PortA
 #define BOARD_NMI_PIN           4
-#define BOARD_NMI_ALT           kPORT_MuxAsGpio
 #define BOARD_NMI_PORT_CLOCK    kCLOCK_PortA
 
 // header row switchable power pins
@@ -71,4 +72,5 @@
 #define BOARD_DEBUG_TX_PIN      17
 #define BOARD_DEBUG_TX_ALT      kPORT_MuxAlt3
 
-#endif // _UBIRCH1R01E_BOARD_H_
+
+#endif // _UBIRCH1R01_BOARD_H_
