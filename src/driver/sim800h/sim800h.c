@@ -21,10 +21,10 @@
  */
 
 #include "sim800h.h"
+#include <drivers/fsl_lpuart.h>
 
 #ifndef NDEBUG
 #include <utilities/fsl_debug_console.h>
-#include <drivers/fsl_lpuart.h>
 
 #else
 # undef PRINTF
