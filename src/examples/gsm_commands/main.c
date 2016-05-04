@@ -20,7 +20,7 @@ int main(void) {
   board_init();
   board_console_init(BOARD_DEBUG_BAUD);
 
-  SysTick_Config(SystemCoreClock / 100U);
+  SysTick_Config(BOARD_SYSTICK_100MS);
 
   // prepare GSM module
   sim800h_enable();

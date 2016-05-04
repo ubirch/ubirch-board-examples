@@ -6,4 +6,7 @@ board. It has several peripherals including an RGB LED which is controlled using
 - programmed via USB (attached disk), just copy the bin to it
 - serial debug console is also available via USB
 
+> If you want to debug using SWD but use the USB serial,
+> set both jumpers ```J6``` and ```J7``` to off.
+
 ![FRDM-K82F](http://cache.nxp.com/files/graphic/block_diagram/FRDM-K82-800x480-BD.jpg)

@@ -32,6 +32,7 @@
 #include <wolfssl/wolfcrypt/rsa.h>
 #include <wolfssl/wolfcrypt/signature.h>
 #include <drivers/fsl_pit.h>
+#include <wolfssl/wolfcrypt/ed25519.h>
 
 #define BENCHMARK_LOOPS 100
 
@@ -203,6 +204,8 @@ void init_pit() {
 
 static uint64_t start;
 
+#define current_time(x) timer_start()
+
 uint64_t timer_start() {
   return start = ms_time;
 }
@@ -238,6 +241,99 @@ WC_RNG rng;
 RsaKey board_rsa_key;
 RsaKey recipient_public_key;
 
+int genTimes = 1000;
+int agreeTimes = 1000;
+
+#ifdef HAVE_ED25519
+void bench_ed25519KeyGen(void)
+{
+  ed25519_key genKey;
+  double start, total, milliEach;
+  int    i;
+
+  /* 256 bit */
+  start = current_time(1);
+
+  for(i = 0; i < genTimes; i++) {
+    wc_ed25519_init(&genKey);
+    wc_ed25519_make_key(&rng, 32, &genKey);
+    wc_ed25519_free(&genKey);
+  }
+
+  total = current_time(0) - start;
+  milliEach  = total / genTimes;  /* per second  */
+  printf("\r\n");
+  printf("ED25519  key generation  %6.3f milliseconds, avg over %d"
+           " iterations\r\n", milliEach, genTimes);
+}
+
+
+void bench_ed25519KeySign(void)
+{
+  int    ret;
+  ed25519_key genKey;
+#ifdef HAVE_ED25519_SIGN
+  double start, total, milliEach;
+  int    i;
+  byte   sig[ED25519_SIG_SIZE];
+  byte   msg[512];
+  word32 x = 0;
+#endif
+
+  wc_ed25519_init(&genKey);
+
+  ret = wc_ed25519_make_key(&rng, ED25519_KEY_SIZE, &genKey);
+  if (ret != 0) {
+    printf("ed25519_make_key failed\r\n");
+    return;
+  }
+
+#ifdef HAVE_ED25519_SIGN
+  /* make dummy msg */
+  for (i = 0; i < (int)sizeof(msg); i++)
+    msg[i] = (byte)i;
+
+  start = current_time(1);
+
+  for(i = 0; i < agreeTimes; i++) {
+    x = sizeof(sig);
+    ret = wc_ed25519_sign_msg(msg, sizeof(msg), sig, &x, &genKey);
+    if (ret != 0) {
+      printf("ed25519_sign_msg failed\r\n");
+      return;
+    }
+  }
+
+  total = current_time(0) - start;
+  milliEach  = total / agreeTimes;  /* per second  */
+  printf("ED25519  sign   time     %6.3f milliseconds, avg over %d"
+           " iterations\r\n", milliEach, agreeTimes);
+
+#ifdef HAVE_ED25519_VERIFY
+  start = current_time(1);
+
+  for(i = 0; i < agreeTimes; i++) {
+    int verify = 0;
+    ret = wc_ed25519_verify_msg(sig, x, msg, sizeof(msg), &verify,
+                                &genKey);
+    if (ret != 0 || verify != 1) {
+      printf("ed25519_verify_msg failed\r\n");
+      return;
+    }
+  }
+
+  total = current_time(0) - start;
+  milliEach  = total / agreeTimes;  /* per second  */
+  printf("ED25519  verify time     %6.3f milliseconds, avg over %d"
+           " iterations\r\n", milliEach, agreeTimes);
+#endif /* HAVE_ED25519_VERIFY */
+#endif /* HAVE_ED25519_SIGN */
+
+  wc_ed25519_free(&genKey);
+}
+#endif /* HAVE_ED25519 */
+
+
 int init_trng() {
   PRINTF("- initializing random number generator\r\n");
   trng_config_t trngConfig;
@@ -248,6 +344,11 @@ int init_trng() {
 }
 
 int init_board_key(unsigned int size) {
+  PRINTF("- benchmarking ED25591\r\n");
+
+  bench_ed25519KeyGen();
+  bench_ed25519KeySign();
+
   PRINTF("- generating board private key (please wait)\r\n");
 
   wc_InitRsaKey(&board_rsa_key, NULL);
@@ -277,7 +378,7 @@ int main(void) {
   board_init();
   board_console_init(BOARD_DEBUG_BAUD);
 
-  SysTick_Config(SystemCoreClock / 100U);
+  SysTick_Config(BOARD_SYSTICK_100MS);
   init_pit();
 
   PRINTF("ubirch #1 r0.2 RSA encryption/signature benchmark\r\n");
