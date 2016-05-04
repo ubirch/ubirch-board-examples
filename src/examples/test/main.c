@@ -21,25 +21,53 @@
  */
 #include <stdint.h>
 #include <stdbool.h>
-#include <board.h>
 #include <stdio.h>
-#include <extpin.h>
-#include <drivers/fsl_lpuart.h>
+#include <board.h>
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
-  LED_Write((counter % 100) < 10);
+#ifdef BOARD_LED0
+  BOARD_LED0((counter % 100) < 10);
+#endif
+#ifdef BOARD_LED1
+  BOARD_LED1((counter % 200) < 50);
+#endif
+#ifdef BOARD_LED2
+  BOARD_LED2((counter % 500) < 100);
+#endif
 }
 
 int main(void) {
-  BOARD_Init();
-  SysTick_Config(RUN_SYSTICK_10MS);
+  board_init();
+  board_console_init(BOARD_DEBUG_BAUD);
 
-  PRINTF("WELCOME!\r\n");
-  while(true) {
-    uint8_t ch = GETCHAR();
-    if(ch == '\r') PUTCHAR('\n');
+  PRINTF("BOARD TEST\r\n");
+#ifdef BOARD_LED0
+  BOARD_LED0(true);
+  delay(1000);
+  BOARD_LED0(false);
+  delay(500);
+#endif
+#ifdef BOARD_LED1
+  BOARD_LED1(true);
+  delay(1000);
+  BOARD_LED1(false);
+  delay(500);
+#endif
+#ifdef BOARD_LED2
+  BOARD_LED2(true);
+  delay(1000);
+  BOARD_LED2(false);
+  delay(500);
+#endif
+
+  SysTick_Config(SystemCoreClock / 100U);
+
+  PRINTF("DEBUG CONSOLE\r\n");
+  while (true) {
+    int ch = GETCHAR();
+    if (ch == '\r') PUTCHAR('\n');
     PUTCHAR(ch);
   }
 }

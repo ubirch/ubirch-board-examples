@@ -7,28 +7,18 @@ ADD_EXECUTABLE(lpuart
   lpuart_polling_transfer.c
   pin_mux.c
   )
+target_link_libraries(lpuart board)
 
-SET_TARGET_PROPERTIES(lpuart PROPERTIES OUTPUT_NAME "lpuart.elf")
+set_target_properties(lpuart PROPERTIES OUTPUT_NAME "lpuart.elf")
 
-TARGET_LINK_LIBRARIES(lpuart -Wl,--start-group)
-TARGET_LINK_LIBRARIES(lpuart ksdk-device-lib)
-TARGET_LINK_LIBRARIES(lpuart ksdk-mmcau)
-TARGET_LINK_LIBRARIES(lpuart ubirch-firmware)
-#TARGET_LINK_LIBRARIES(lpuart wolfcrypt)
+target_link_libraries(lpuart -Wl,--start-group)
+target_link_libraries(lpuart ksdk-device-lib)
+target_link_libraries(lpuart ksdk-mmcau)
 # SYSTEM LIBRARIES
-TARGET_LINK_LIBRARIES(lpuart m)
-TARGET_LINK_LIBRARIES(lpuart c)
-TARGET_LINK_LIBRARIES(lpuart gcc)
-TARGET_LINK_LIBRARIES(lpuart nosys)
-TARGET_LINK_LIBRARIES(lpuart -Wl,--end-group)
+target_link_libraries(lpuart m)
+target_link_libraries(lpuart c)
+target_link_libraries(lpuart gcc)
+target_link_libraries(lpuart nosys)
+target_link_libraries(lpuart -Wl,--end-group)
 
-# MAP FILE
-SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG}  -Xlinker -Map=lpuart.map")
-SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Xlinker -Map=lpuart.map")
-
-# BIN AND HEX
-ADD_CUSTOM_COMMAND(TARGET lpuart POST_BUILD COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:lpuart> $<TARGET_FILE_DIR:lpuart>/lpuart.hex)
-ADD_CUSTOM_COMMAND(TARGET lpuart POST_BUILD COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:lpuart> $<TARGET_FILE_DIR:lpuart>/lpuart.bin)
-ADD_CUSTOM_COMMAND(TARGET lpuart POST_BUILD COMMAND cp $<TARGET_FILE_DIR:lpuart>/lpuart.bin ${CMAKE_CURRENT_SOURCE_DIR})
-ADD_CUSTOM_COMMAND(TARGET lpuart POST_BUILD COMMAND cp $<TARGET_FILE_DIR:lpuart>/lpuart.elf ${CMAKE_CURRENT_SOURCE_DIR})
-#ADD_CUSTOM_TARGET(burn COMMAND [ -d /Volumes/MBED ] && cp ${CMAKE_CURRENT_SOURCE_DIR}/lpuart.bin /Volumes/MBED DEPENDS lpuart)
+prepare_flash(lpuart)

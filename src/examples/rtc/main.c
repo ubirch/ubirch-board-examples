@@ -64,7 +64,8 @@ int main(void) {
   rtc_datetime_t date;
   rtc_config_t rtcConfig;
 
-  BOARD_Init();
+  board_init();
+  board_console_init(BOARD_DEBUG_BAUD);
 
   /* Init RTC */
   /*

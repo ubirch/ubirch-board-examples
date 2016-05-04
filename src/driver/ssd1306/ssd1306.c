@@ -19,20 +19,27 @@
  * limitations under the License.
  */
 
-#include <extpin.h>
-#include <board.h>
-#include "ssd1306.h"
 #include <i2c.h>
+#include <drivers/fsl_gpio.h>
+#include <drivers/fsl_port.h>
+#include "ssd1306.h"
 
 // == low level functions ==================================
+static inline void _delay_us(uint32_t us) {
+  uint32_t ticks = SystemCoreClock / 10000000U * us;
+  while (ticks--) __asm("nop");
+}
 
-void ssd1306_reset(EXTPIN_T reset_pin) {
-  ExtPin_SetOutput(reset_pin);
-  ExtPin_Write(reset_pin, true);
-  BusyWait100us(1);
-  ExtPin_Write(reset_pin, false);
-  BusyWait100us(1);
-  ExtPin_Write(reset_pin, true);
+void ssd1306_reset(GPIO_Type *gpio, uint32_t reset_pin) {
+  const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
+  GPIO_PinInit(gpio, reset_pin, &OUTFALSE);
+
+  // reset sequence
+  GPIO_WritePinOutput(gpio, reset_pin, true);
+  _delay_us(100);
+  GPIO_WritePinOutput(gpio, reset_pin, false);
+  _delay_us(100);
+  GPIO_WritePinOutput(gpio, reset_pin, true);
 
   // software configuration according to specs
   ssd1306_cmd(OLED_DEVICE_ADDRESS, OLED_DISPLAY_OFF);
@@ -65,12 +72,12 @@ void ssd1306_reset(EXTPIN_T reset_pin) {
 }
 
 void ssd1306_cmd(uint8_t address, uint8_t command) {
-  i2c_write_reg(address, 0x00, &command, 1);
+  i2c_write(address, 0x00, &command, 1);
 }
 
 
 void ssd1306_data(uint8_t address, uint8_t *data, size_t size) {
-  i2c_write_reg(address, 0x40, data, size);
+  i2c_write(address, 0x40, data, size);
 }
 
 //== higher level functions ================================
@@ -89,7 +96,7 @@ void ssd1306_clear(uint8_t address) {
   for (uint8_t page = 0; page < 8; page++) {
     ssd1306_cmd(address, (uint8_t) 0xb0 | page);
     ssd1306_cmd(address, 0x00);
-    i2c_write_reg(address, 0x40, cleared_buffer, 128);
+    i2c_write(address, 0x40, cleared_buffer, 128);
   }
 }
 

@@ -64,7 +64,16 @@ status_t i2c_ping(uint8_t address);
  * @param data a data array to write
  * @param size the amount of bytes to write
  */
-status_t i2c_write_reg(uint8_t address, uint8_t reg, uint8_t *data, size_t size);
+status_t i2c_write(uint8_t address, uint8_t reg, uint8_t *data, size_t size);
+
+/**
+ * Read data from the device.
+ * @param address the 7 bit device address
+ * @param reg start address to read from
+ * @param data a data array to read into
+ * @param size the amount of bytes to read
+ */
+status_t i2c_read(uint8_t address, uint8_t reg, uint8_t *data, size_t size);
 
 /**
  * Read a single byte from a register.

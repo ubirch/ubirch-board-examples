@@ -34,7 +34,7 @@ void i2c_init(i2c_speed_t speed) {
   i2c_master_config_t i2c_config;
   I2C_MasterGetDefaultConfig(&i2c_config);
   i2c_config.baudRate_Bps = speed;
-  I2C_MasterInit(I2C2, &i2c_config, CLOCK_GetFreq(kCLOCK_BusClk));
+  I2C_MasterInit(I2C2, &i2c_config, CLOCK_GetFreq(I2C2_CLK_SRC));
 }
 
 void i2c_deinit() {
@@ -54,7 +54,7 @@ status_t i2c_ping(uint8_t address) {
   return status;
 }
 
-status_t i2c_write_reg(uint8_t address, uint8_t reg, uint8_t *data, size_t size) {
+status_t i2c_write(uint8_t address, uint8_t reg, uint8_t *data, size_t size) {
   i2c_master_transfer_t transfer;
   memset(&transfer, 0, sizeof(transfer));
 
@@ -69,7 +69,7 @@ status_t i2c_write_reg(uint8_t address, uint8_t reg, uint8_t *data, size_t size)
   status_t status = I2C_MasterTransferBlocking(I2C2, &transfer);
 #ifndef NDEBUG
   if (status != kStatus_Success) {
-    PRINTF("ISL29125 write(%02d) <= %02x\r\n", reg, *data);
+    PRINTF("I2C write(%02d) <= %02x\r\n", reg, *data);
     i2c_error("write reg", status);
   }
 #endif
@@ -78,51 +78,41 @@ status_t i2c_write_reg(uint8_t address, uint8_t reg, uint8_t *data, size_t size)
   return status;
 }
 
-uint8_t i2c_read_reg(uint8_t address, uint8_t reg) {
+status_t i2c_read(uint8_t address, uint8_t reg, uint8_t *data, size_t size) {
 
   i2c_master_transfer_t transfer;
   memset(&transfer, 0, sizeof(transfer));
 
-  static uint8_t data = 0;
-  transfer.slaveAddress = address;
-  transfer.direction = kI2C_Read;
-  transfer.subaddress = reg;
-  transfer.subaddressSize = 1;
-  transfer.data = &data;
-  transfer.dataSize = 1;
-  transfer.flags = kI2C_TransferDefaultFlag;
-  status_t status = I2C_MasterTransferBlocking(I2C2, &transfer);
-#ifndef NDEBUG
-  if (status != kStatus_Success) {
-    PRINTF("ISL29125 read(%02d) => %02x\r\n", reg, data);
-    i2c_error("read reg", status);
-  }
-#endif
-  return data;
-}
-
-uint16_t i2c_read_reg16(uint8_t address, uint8_t reg) {
-
-  i2c_master_transfer_t transfer;
-  memset(&transfer, 0, sizeof(transfer));
-
-  static uint8_t data[2] = {0, 0};
   transfer.slaveAddress = address;
   transfer.direction = kI2C_Read;
   transfer.subaddress = reg;
   transfer.subaddressSize = 1;
   transfer.data = data;
-  transfer.dataSize = 2;
+  transfer.dataSize = size;
   transfer.flags = kI2C_TransferDefaultFlag;
   status_t status = I2C_MasterTransferBlocking(I2C2, &transfer);
 
-  uint16_t value = (data[1] << 8 | data[0]);
 #ifndef NDEBUG
   if (status != kStatus_Success) {
-    PRINTF("ISL29125 read(%02d) => %04x\r\n", reg, value);
-    i2c_error("read reg16 (address)", status);
+    PRINTF("I2C read(%02d) => %d byte\r\n", reg, transfer.dataSize);
+    i2c_error("read (address)", status);
+    I2C_MasterStop(I2C2);
   }
 #endif
+  return status;
+}
+
+uint8_t i2c_read_reg(uint8_t address, uint8_t reg) {
+
+  i2c_read(address, reg, &reg, 1);
+  return reg;
+}
+
+uint16_t i2c_read_reg16(uint8_t address, uint8_t reg) {
+
+  uint8_t data[2];
+  i2c_read(address, reg, data, 2);
+  uint16_t value = (data[1] << 8 | data[0]);
   return value;
 }
 

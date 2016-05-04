@@ -12,13 +12,15 @@ void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
   bool on = (counter % 50) < 40;  //long on
-  LED_Write(on);
+  BOARD_LED0(on);
 }
 
 
 int main(void) {
-  BOARD_Init();
-  SysTick_Config(RUN_SYSTICK_10MS);
+  board_init();
+  board_console_init(BOARD_DEBUG_BAUD);
+
+  SysTick_Config(SystemCoreClock / 100U);
 
   // prepare GSM module
   sim800h_enable();
@@ -46,7 +48,7 @@ int main(void) {
 
   bool registered;
   do {
-    BusyWait100us(20000);
+    delay(2000);
     sim800h_send("AT+CREG?");
     // this looks strange because we need to ensure both gsm_expect() calls are made,
     // so expect-1 && expect-2 does not work because of expression evaluation
@@ -66,7 +68,7 @@ int main(void) {
   sim800h_expect("OK");
 
   do {
-    BusyWait100us(20000);
+    delay(2000);
     sim800h_send("AT+CGATT=1");
   } while (!sim800h_expect("OK"));
 

@@ -23,33 +23,48 @@
  */
 #include <stdint.h>
 #include <stdbool.h>
-#include <board.h>
 #include <stdio.h>
 #include <isl29125.h>
 #include <i2c.h>
+#include <utilities/fsl_debug_console.h>
+#include <board.h>
+
+#define ISL_327LUX_MAX 65000
+#define ISL_10KLUX_MIN 8000
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
-  LED_Write((counter % 100) < 10);
+  BOARD_LED0((counter % 100) < 10);
 }
 
+void sample_rgb(rgb48_t *color, uint8_t color_mode) {
+  // set sampling mode, ir filter and interrupt mode
+  isl_set(ISL_R_FILTERING, ISL_FILTER_IR_MAX);
+  isl_set(ISL_R_COLOR_MODE, (uint8_t) (ISL_MODE_RGB | color_mode | ISL_MODE_16BIT));
+
+  // give the device time to sample (2 fill RGB cycles (100ms per color))
+  // well, theoretically, fact is, lowering the delay to 400ms will make it
+  // almost always miss blue
+  delay(600);
+
+  isl_read_rgb48(color);
+}
 
 int main(void) {
-  BOARD_Init();
-  SysTick_Config(RUN_SYSTICK_10MS);
+  board_init();
+  board_console_init(BOARD_DEBUG_BAUD);
+
+  SysTick_Config(SystemCoreClock / 100U);
   PRINTF("\r\n-- ISL29125 test\r\n");
 
   i2c_init(I2C_FULL_SPEED);
 
-  if (!isl_reset()) {
-    PRINTF("could not initialize ISL29125 RGB sensor\r\n");
-  }
+  if (isl_reset()) PRINTF("could not initialize ISL29125 RGB sensor\r\n");
 
   // set sampling mode, ir filter and interrupt mode
   isl_set(ISL_R_COLOR_MODE, ISL_MODE_RGB | ISL_MODE_375LUX | ISL_MODE_16BIT);
-  isl_set(ISL_R_FILTERING, ISL_FILTER_IR_MAX);
-  isl_set(ISL_R_INTERRUPT, ISL_INT_ON_THRSLD);
+  isl_set(ISL_R_FILTERING, ISL_FILTER_IR_NONE);
 
   uint8_t color_mode = isl_get(ISL_R_COLOR_MODE);
   uint8_t filter_mode = isl_get(ISL_R_FILTERING);
@@ -60,27 +75,39 @@ int main(void) {
 
   PRINTF("reading RGB values from sensor\r\n");
   PRINTF("'%%' indicates the chip is still in a conversion cyle, so we wait\r\n");
+  uint8_t sensitivity = ISL_MODE_375LUX;
   while (true) {
-    // wait for the conversion cycle to be done, this just indicates there is a cycle
-    // in progress. the actual r,g,b values are always available from the last cycle
-    while (!(isl_get(ISL_R_STATUS) & ISL_STATUS_ADC_DONE)) PUTCHAR('%');
-    PRINTF("\r\n");
-
-    // read the full 36 or 48 bit color
-    printf("48bit: ");
     rgb48_t rgb48;
-    isl_read_rgb48(&rgb48);
-    printf("0x%04x%04x%04x rgb48(%u,%u,%u)\r\n", rgb48.red, rgb48.green, rgb48.blue, rgb48.red, rgb48.green, rgb48.blue);
 
-    printf("24bit: ");
-    rgb24_t rgb24;
-    isl_read_rgb24(&rgb24);
-    printf("0x%02x%02x%02x rgb24(%u,%u,%u)\r\n", rgb24.red, rgb24.green, rgb24.blue, rgb24.red, rgb24.green, rgb24.blue);
+    if (!isl_reset()) {
+      PRINTF("could not initialize ISL29125 RGB sensor\r\n");
+    }
 
-    BusyWait100us(50000);
+    // do an initial sampling
+    sample_rgb(&rgb48, sensitivity);
+
+    // auto-compensate for brightness
+    if (sensitivity == ISL_MODE_375LUX &&
+        rgb48.red > ISL_327LUX_MAX && rgb48.green > ISL_327LUX_MAX && rgb48.blue > ISL_327LUX_MAX) {
+      sensitivity = ISL_MODE_10KLUX;
+      sample_rgb(&rgb48, sensitivity);
+    } else if (sensitivity == ISL_MODE_10KLUX &&
+               rgb48.red < ISL_10KLUX_MIN && rgb48.green < ISL_10KLUX_MIN && rgb48.blue < ISL_10KLUX_MIN) {
+      sensitivity = ISL_MODE_375LUX;
+      sample_rgb(&rgb48, sensitivity);
+    }
+
+    PRINTF("\r%6s 0x%04x%04x%04x rgb48(%lu,%lu,%lu) rgb24(%u,%u,%u)\e[K",
+           sensitivity == ISL_MODE_375LUX ? "375LUX" : "10KLUX",
+           rgb48.red, rgb48.green, rgb48.blue,
+           rgb48.red, rgb48.green, rgb48.blue,
+           rgb48.red >> 8, rgb48.green >> 8, rgb48.blue >> 8);
+
+    isl_set(ISL_R_COLOR_MODE, ISL_MODE_POWERDOWN);
+
+    delay(100);
   }
 
-  I2C_MasterStop(I2C2);
   I2C_MasterDeinit(I2C2);
 
   return 0;
