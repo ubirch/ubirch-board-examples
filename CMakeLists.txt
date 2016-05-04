@@ -7,8 +7,8 @@ set(ENV{ARMGCC_DIR} "/usr/local/Cellar/gcc-arm-none-eabi-49/20150609")
 set(CMAKE_TOOLCHAIN_FILE "${KSDK_ROOT}/tools/cmake_toolchain_files/armgcc.cmake")
 # set board type (ubirch#1 r0.2, FRDM-K82F*, FRDM-KL82Z*) - * not yet implemented
 if (NOT BOARD)
-  set(BOARD "ubirch#1 r0.2")
-  #set(BOARD "FRDM-K82F")
+#  set(BOARD "ubirch#1 r0.2")
+  set(BOARD "FRDM-K82F")
 endif ()
 
 # also add the gdb to our list of tools
