@@ -26,7 +26,7 @@ function(prepare_flash NAME)
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG}  -Xlinker -Map=${NAME}.map")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Xlinker -Map=${NAME}.map")
 
-  if(BOARD STREQUAL "ubirch#1 r0.2")
+  if(BOARD MATCHES "ubirch#1")
     # create special target that directly flashes
     add_custom_target(${NAME}-flash
       DEPENDS ${NAME}
