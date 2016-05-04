@@ -2,11 +2,10 @@
  * wolfSSL test code (ECC).
  *
  * Generates a key pair on the board and loads a public key from elsewhere.
- * Then encrypts and signs a message and prints the resulting ciphers in
- * DER encoding.
+ * Then signs a message and prints the signature hex encoded.
  *
  * @author Matthias L. Jugel
- * @date 2016-04-12
+ * @date 2016-05-04
  *
  * Copyright 2016 ubirch GmbH (https://ubirch.com)
  *
