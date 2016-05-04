@@ -7,6 +7,11 @@ You will have to select the specific board when running ```cmake``` (see below).
 
 > \* Currently the Kinetis SDK 2.0 is not available for the K82Z.
 
+See the board specifics here:
+
+* [ubirch#1 r0.2](src/board/ubirch1r02)
+* [FRDM-K82F](src/board/frdm_k82f)
+
 ## Code checkout:
 
 The following code will ensure that the [firmware](https://github.com/ubirch/firmware) repository as well as the [wolfssl](https://github.com/ubirch/wolfssl)
