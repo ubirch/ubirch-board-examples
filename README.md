@@ -184,9 +184,9 @@ The pin configuration is as follows:
   Just a simple test that lets the on-board LED blink and echos characters back that you
   type into the debug console.
 
-* ```src/examples/wolfssl-test```
+* ```src/examples/wolfssl-test-*``` - wolfSSL test code
 
-  This code will perform an RSA encryption and signing on-board and outputs the
+  This code will perform an RSA/ECC encryption and signing on-board and outputs the
   result hex-encoded to the debug console. The result can be verified using openssl.
   See the README.md in the directory for instructions.
 
