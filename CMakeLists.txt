@@ -2,11 +2,14 @@ cmake_minimum_required(VERSION 3.4)
 
 # configure Kinetis SDK directory and compiler
 set(KSDK_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/libs/SDK_2.0_MK82FN256xxx15)
+# TODO use find_... to find the arm gcc
 set(ENV{ARMGCC_DIR} "/usr/local/Cellar/gcc-arm-none-eabi-49/20150609")
 set(CMAKE_TOOLCHAIN_FILE "${KSDK_ROOT}/tools/cmake_toolchain_files/armgcc.cmake")
 # set board type (ubirch#1 r0.2, FRDM-K82F*, FRDM-KL82Z*) - * not yet implemented
-set(BOARD "ubirch#1 r0.2")
-#set(BOARD "FRDM-K82F")
+if (NOT BOARD)
+  set(BOARD "ubirch#1 r0.2")
+  #set(BOARD "FRDM-K82F")
+endif ()
 
 # also add the gdb to our list of tools
 find_program(CMAKE_GDB arm-none-eabi-gdb)
@@ -26,13 +29,13 @@ function(prepare_flash NAME)
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG}  -Xlinker -Map=${NAME}.map")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Xlinker -Map=${NAME}.map")
 
-  if(BOARD MATCHES "ubirch#1")
+  if (BOARD MATCHES "ubirch#1")
     # create special target that directly flashes
     add_custom_target(${NAME}-flash
       DEPENDS ${NAME}
       COMMAND ${CMAKE_GDB} -x ${GDBINIT}_flash --batch $<TARGET_FILE_DIR:${NAME}>/${NAME}.elf
       )
-  else()
+  else ()
     ADD_CUSTOM_COMMAND(TARGET ${NAME} POST_BUILD
       COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${NAME}> $<TARGET_FILE_DIR:${NAME}>/${NAME}.bin
       )
@@ -41,7 +44,7 @@ function(prepare_flash NAME)
       DEPENDS ${NAME}
       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_DIR:${NAME}>/${NAME}.bin /Volumes/MBED
       )
-  endif()
+  endif ()
   # print out some helpful hints to debug
   add_custom_command(TARGET ${NAME} POST_BUILD
     COMMAND echo "==== DEBUG COMMAND ====="
