@@ -25,6 +25,8 @@
 #ifndef _UBIRCH1R01_BOARD_H_
 #define _UBIRCH1R01_BOARD_H_
 
+#define BOARD_SYSTICK_1MS       (SystemCoreClock / 1000 - 1)
+#define BOARD_SYSTICK_100MS     (SystemCoreClock / 100 - 1)
 
 // amount of LEDs available on the board
 #define BOARD_LEDS              1

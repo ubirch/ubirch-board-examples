@@ -23,7 +23,7 @@ int main(void) {
   board_init();
   board_console_init(BOARD_DEBUG_BAUD);
 
-  SysTick_Config(SystemCoreClock / 100U);
+  SysTick_Config(BOARD_SYSTICK_100MS);
 
   PRINTF("\r\n-- SSD1306 test\r\n");
 

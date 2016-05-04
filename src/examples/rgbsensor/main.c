@@ -55,7 +55,7 @@ int main(void) {
   board_init();
   board_console_init(BOARD_DEBUG_BAUD);
 
-  SysTick_Config(SystemCoreClock / 100U);
+  SysTick_Config(BOARD_SYSTICK_100MS);
   PRINTF("\r\n-- ISL29125 test\r\n");
 
   i2c_init(I2C_FULL_SPEED);

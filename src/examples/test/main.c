@@ -62,7 +62,7 @@ int main(void) {
   delay(500);
 #endif
 
-  SysTick_Config(SystemCoreClock / 100U);
+  SysTick_Config(BOARD_SYSTICK_100MS);
 
   PRINTF("DEBUG CONSOLE\r\n");
   while (true) {

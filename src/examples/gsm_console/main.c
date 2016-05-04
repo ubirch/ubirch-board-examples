@@ -31,7 +31,7 @@ void SysTick_Handler() {
 
 int main(void) {
   board_init();
-  SysTick_Config(SystemCoreClock / 100U);
+  SysTick_Config(BOARD_SYSTICK_100MS);
 
   sim800h_enable();
   sim800h_power_enable();
