@@ -45,10 +45,6 @@ Also download the [SEGGER J-Link Debugger](https://www.segger.com/jlink-software
 Connect the J-Link via USB, also connect the Cortex-M debug ribbon cable to the board.
 Power the board using USB or a battery. Connect a USB-UART adapter RX/TX to the corresponding UART pins on board (see next section).
 
-> *TODO:* Fix the toolchain, using the
-> [ARM mbed toolchain](https://github.com/ARMmbed/target-mbed-gcc/blob/master/CMake/toolchain.cmake) as a start.
-> Currently, the toolchain only works partially, not applying the correct exe and linker flags.
-
 Compile the code by running the following commands:
 
 ```
@@ -56,7 +52,6 @@ cd $SRCDIR
 mkdir build
 cd build
 cmake ..
-cmake .. # yes, twice due to a toolchain issue as noted above :(
 make
 ```
 
