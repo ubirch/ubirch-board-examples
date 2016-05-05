@@ -10,20 +10,7 @@ if (NOT BOARD)
   set(BOARD "ubirch#1")
 #  set(BOARD "FRDM-K82F")
 endif ()
-
-# also add the gdb to our list of tools
-find_program(CMAKE_GDB arm-none-eabi-gdb)
-find_program(CGDB cgdb)
-if (CGDBB_NO_FOUND)
-  message(STATUS "For debugging, install cgdb...")
-else ()
-  message(STATUS "DEBUGGER: ${CGDB} found.")
-endif ()
-
-# we need this gdbinit file for flashing directly
-# needs "JLinkGDBServer  -if SWD -device MK82FN256xxx15" to be running
-set(GDBINIT ${CMAKE_CURRENT_SOURCE_DIR}/.gdbinit)
-
+message(STATUS "selected board: ${BOARD}")
 
 if (NOT EXISTS "${KSDK_ROOT}/")
   message(FATAL_ERROR "Missing Kinetis SDK directory, please link or copy into libs/ as '${KSDK_ROOT}'")

@@ -1,3 +1,17 @@
+# add the gdb for the macro below
+find_program(CMAKE_GDB arm-none-eabi-gdb)
+find_program(CGDB cgdb)
+if (CGDBB_NO_FOUND)
+  message(STATUS "For debugging, install cgdb...")
+else ()
+  message(STATUS "debugger: ${CGDB} found.")
+endif ()
+
+# we need this gdbinit file for flashing directly
+# needs "JLinkGDBServer  -if SWD -device MK82FN256xxx15" to be running
+set(GDBINIT ${CMAKE_CURRENT_SOURCE_DIR}/.gdbinit)
+message(STATUS "gdbinit: ${GDBINIT}")
+
 # create special target that directly flashes
 if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
   set(MBED_FLASH_DIR /Volumes/MBED)
