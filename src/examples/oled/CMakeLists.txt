@@ -1,17 +1,4 @@
-# ADD_EXECUTABLE
-ADD_EXECUTABLE(oled main.c)
-TARGET_LINK_LIBRARIES(oled board ssd1306 i2c)
-
-SET_TARGET_PROPERTIES(oled PROPERTIES OUTPUT_NAME "oled.elf")
-
-TARGET_LINK_LIBRARIES(oled -Wl,--start-group)
-TARGET_LINK_LIBRARIES(oled ksdk-device-lib)
-TARGET_LINK_LIBRARIES(oled ksdk-mmcau)
-# SYSTEM LIBRARIES
-TARGET_LINK_LIBRARIES(oled m)
-TARGET_LINK_LIBRARIES(oled c)
-TARGET_LINK_LIBRARIES(oled gcc)
-TARGET_LINK_LIBRARIES(oled nosys)
-TARGET_LINK_LIBRARIES(oled -Wl,--end-group)
-
+add_executable(oled main.c)
+target_link_libraries(oled board ssd1306 i2c)
+set_target_properties(oled PROPERTIES OUTPUT_NAME "oled.elf")
 prepare_flash(oled)
