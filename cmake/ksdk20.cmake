@@ -1,6 +1,5 @@
 # Kinetis SDK 2.0 base library
 
-include_directories(${KSDK_ROOT}/utilities)
 include_directories(${KSDK_ROOT}/CMSIS/Include)
 include_directories(${KSDK_ROOT}/devices/${MCU_SPEC})
 include_directories(${KSDK_ROOT}/devices/${MCU_SPEC}/drivers)
