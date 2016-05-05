@@ -1,4 +1,4 @@
-# CMake settings to create a library of wolfcrypt
+# wolfCrypt library
 
 set(WOLFSSL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/libs/wolfssl")
 set(WOLFSSL_DEFINITIONS
@@ -19,5 +19,6 @@ else ()
   list(REMOVE_ITEM WOLFSSL_SRCS ${WOLFSSL_ROOT}/wolfcrypt/src/misc.c)
 
   add_library(wolfcrypt STATIC ${WOLFSSL_SRCS})
+  target_link_libraries(wolfcrypt mmcau)
   target_compile_definitions(wolfcrypt PUBLIC ${WOLFSSL_DEFINITIONS})
 endif ()
