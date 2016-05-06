@@ -49,16 +49,17 @@ void sim800h_send(const char *cmd) {
   sim800h_writeline(cmd);
 }
 
-void sim800h_expect_urc(int n, uint32_t timeout) {
+bool sim800h_expect_urc(int n, uint32_t timeout) {
   char response[128] = {0};
   do {
-    if(!sim800h_readline(response, 127, timeout)) break;
+    if(!sim800h_readline(response, 127, timeout)) return false;
     PRINTF("GSM .... ?? %s\r\n", response);
   } while (check_urc(response) != n);
+  return true;
 }
 
 bool sim800h_expect(const char *expected, uint32_t timeout) {
-  char response[255] = {0};
+  char response[255];
   size_t len, expected_len = strlen(expected);
   while (true) {
     len = sim800h_readline(response, 127, timeout);
