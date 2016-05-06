@@ -30,6 +30,16 @@
 #include <i2c.h>
 #include <timer.h>
 
+static const i2c_config_t i2c_config = {
+  .i2c = BOARD_I2C,
+  .port = BOARD_I2C_PORT,
+  .mux = BOARD_I2C_ALT,
+  .port_clock = BOARD_I2C_PORT_CLOCK,
+  .SCL = BOARD_I2C_SCL_PIN,
+  .SDA = BOARD_I2C_SDA_PIN,
+  .baud = I2C_FULL_SPEED
+};
+
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
@@ -42,9 +52,8 @@ int main(void) {
 
   SysTick_Config(BOARD_SYSTICK_100MS);
 
-
   while (true) {
-    i2c_init(I2C_STANDARD);
+    i2c_init(i2c_config);
 
     for (uint8_t address = 0x01; address <= 0x7f; address++) {
       PRINTF("Scanning for device 0x%02x: \e[K", address);

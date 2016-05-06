@@ -80,7 +80,7 @@
 #define BOARD_NMI_ALT           kPORT_MuxAsGpio
 
 // (debug) console
-#define BOARD_DEBUG_TYPE        kDebugConsoleLPUART                            `
+#define BOARD_DEBUG_TYPE        kDebugConsoleLPUART
 #define BOARD_DEBUG_INSTANCE    0
 #define BOARD_DEBUG_UART        LPUART0
 #define BOARD_DEBUG_CLKSRC      kClockLpuartSrcOsc0erClk

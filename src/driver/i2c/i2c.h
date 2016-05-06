@@ -29,6 +29,7 @@
 #define _UBIRCH_I2C_CORE_H
 
 #include <drivers/fsl_common.h>
+#include <drivers/fsl_port.h>
 
 /**
  * Available I2C speeds.
@@ -40,11 +41,21 @@ typedef enum i2c_speed {
     I2C_HIGH_SPEED = 3400000U  // 3.4MHz
 } i2c_speed_t;
 
+typedef struct i2c_config {
+    I2C_Type *i2c;
+    PORT_Type *port;
+    clock_name_t i2c_clock;
+    clock_ip_name_t port_clock;
+    uint32_t SCL, SDA;
+    port_mux_t mux;
+    uint32_t baud;
+} i2c_config_t;
+
 /**
  * Initialize the I2C bus with a specific speed.
  * @param speed bus speed
  */
-void i2c_init(i2c_speed_t speed);
+void i2c_init(i2c_config_t speed);
 
 /**
  * Deinitialize I2C bus

@@ -59,6 +59,14 @@
 #define BOARD_PWR_EN_ALT        kPORT_MuxAsGpio
 #define BOARD_PWR_EN_PORT_CLOCK kCLOCK_PortC
 
+// I2C configuration
+#define BPARD_I2C               I2C2
+#define BOARD_I2C_PORT          PORTB
+#define BOARD_I2C_PORT_CLOCK    kCLOCK_PortB
+#define BOARD_I2C_ALT           kPORT_MuxAlt4
+#define BOARD_I2C_SCL_PIN       10U
+#define BOARD_I2C_SDA_PIN       11U
+
 // (debug) console                             `
 //! LPUART0 (RX - PTB16, TX - PTB17)
 #define BOARD_DEBUG_TYPE        DEBUG_CONSOLE_DEVICE_TYPE_LPUART

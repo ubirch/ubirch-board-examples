@@ -8,9 +8,15 @@
 #include <timer.h>
 #include "font5x5.h"
 
-void oled_invert(int row, int column);
+const i2c_config_t i2c_config = {
+  .port = BOARD_I2C_PORT,
+  .mux = BOARD_I2C_ALT,
+  .port_clock = BOARD_I2C_PORT_CLOCK,
+  .SCL = BOARD_I2C_SCL_PIN,
+  .SDA = BOARD_I2C_SDA_PIN,
+  .baud = I2C_FAST_MODE
+};
 
-void oled_putc(int row, int column, char c);
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
@@ -19,6 +25,20 @@ void SysTick_Handler() {
 }
 
 uint8_t buffer[64 * 6];
+
+
+void oled_putc(int row, int column, char c) {
+  if (c >= 'A' && c <= 'Z') {
+    memcpy(buffer + row * 64 + column * 8 + 1, font5x5_abc + (c - 'A') * 5, 5);
+  } else {
+    memcpy(buffer + row * 64 + column * 8 + 1, &font5x5_extra[20 * 5], 5);
+  }
+}
+
+void oled_invert(int row, int column) {
+  for (int b = 0; b < 7; b++) buffer[row * 64 + column * 8 + b] = ~buffer[row * 64 + column * 8 + b];
+  ssd1306_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
+}
 
 int main(void) {
   board_init();
@@ -29,7 +49,7 @@ int main(void) {
   PRINTF("\r\n-- SSD1306 test\r\n");
 
   // initialize i2c
-  i2c_init(I2C_FAST_MODE);
+  i2c_init(i2c_config);
 
   // enable reset pin clock, mux as GPIO and reset oled display
   CLOCK_EnableClock(kCLOCK_PortB);
@@ -99,15 +119,3 @@ int main(void) {
   return 0;
 }
 
-void oled_putc(int row, int column, char c) {
-  if (c >= 'A' && c <= 'Z') {
-    memcpy(buffer + row * 64 + column * 8 + 1, font5x5_abc + (c - 'A') * 5, 5);
-  } else {
-    memcpy(buffer + row * 64 + column * 8 + 1, &font5x5_extra[20 * 5], 5);
-  }
-}
-
-void oled_invert(int row, int column) {
-  for (int b = 0; b < 7; b++) buffer[row * 64 + column * 8 + b] = ~buffer[row * 64 + column * 8 + b];
-  ssd1306_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
-}

@@ -33,6 +33,16 @@
 #define ISL_327LUX_MAX 65000
 #define ISL_10KLUX_MIN 8000
 
+static const i2c_config_t i2c_config = {
+  .i2c = BOARD_I2C,
+  .port = BOARD_I2C_PORT,
+  .mux = BOARD_I2C_ALT,
+  .port_clock = BOARD_I2C_PORT_CLOCK,
+  .SCL = BOARD_I2C_SCL_PIN,
+  .SDA = BOARD_I2C_SDA_PIN,
+  .baud = I2C_FULL_SPEED
+};
+
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
@@ -59,7 +69,7 @@ int main(void) {
   SysTick_Config(BOARD_SYSTICK_100MS);
   PRINTF("\r\n-- ISL29125 test\r\n");
 
-  i2c_init(I2C_FULL_SPEED);
+  i2c_init(i2c_config);
 
   if (isl_reset()) PRINTF("could not initialize ISL29125 RGB sensor\r\n");
 
@@ -77,6 +87,7 @@ int main(void) {
   PRINTF("reading RGB values from sensor\r\n");
   PRINTF("'%%' indicates the chip is still in a conversion cyle, so we wait\r\n");
   uint8_t sensitivity = ISL_MODE_375LUX;
+
   while (true) {
     rgb48_t rgb48;
 

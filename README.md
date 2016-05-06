@@ -16,6 +16,7 @@ See the board specifics here:
 
 The following code will ensure that the [firmware](https://github.com/ubirch/firmware) repository as well as the [wolfssl](https://github.com/ubirch/wolfssl)
 repository are checked out as submodules in ```libs```.
+
 ```
 git clone --recursive git@github.com:ubirch/ubirch2-board.git
 ```

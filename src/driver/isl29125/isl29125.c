@@ -45,10 +45,7 @@ bool isl_reset(void) {
 
   // reset and make sure we are actually done resetting
   uint8_t reset = ISL_RESET;
-  status_t status = i2c_write(ISL_DEVICE_ADDRESS, 0x00, &reset, 1);
-  I2C_MasterStop(I2C2);
-
-  return status == kStatus_Success;
+  return i2c_write(ISL_DEVICE_ADDRESS, 0x00, &reset, 1) == kStatus_Success;
 }
 
 // TODO: burst read 48 bit

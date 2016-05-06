@@ -28,6 +28,7 @@ static bool initialized = false;
 
 void PIT3_IRQHandler() {
   PIT_ClearStatusFlags(PIT, kPIT_Chnl_3, PIT_TFLG_TIF_MASK);
+  __SEV();
 }
 
 void timer_init() {
