@@ -31,6 +31,8 @@ void SysTick_Handler() {
 
 int main(void) {
   board_init();
+  board_console_init(BOARD_DEBUG_BAUD);
+
   SysTick_Config(BOARD_SYSTICK_100MS);
 
   sim800h_enable();

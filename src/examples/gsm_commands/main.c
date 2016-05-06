@@ -28,7 +28,12 @@ int main(void) {
   // power on GSM module
   sim800h_power_enable();
 
-  sim800h_expect_urc(9);
+  sim800h_send("ATE0");
+  sim800h_expect("OK");
+  sim800h_send("ATE0");
+  if(!sim800h_expect("OK"))
+    sim800h_expect_urc(9);
+
   // disable echo, we need to check if our command is echoed back, then
   // check for OK - if echo is off we just get a failed ATE0
   sim800h_send("ATE0");

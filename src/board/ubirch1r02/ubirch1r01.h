@@ -51,7 +51,6 @@
 #define BOARD_NMI_GPIO          GPIOA
 #define BOARD_NMI_PORT_CLOCK    kCLOCK_PortA
 #define BOARD_NMI_PIN           4
-#define BOARD_NMI_PORT_CLOCK    kCLOCK_PortA
 
 // header row switchable power pins
 #define BOARD_PWR_EN_PORT       PORTC

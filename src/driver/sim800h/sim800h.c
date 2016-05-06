@@ -23,10 +23,7 @@
 #include "sim800h.h"
 #include <drivers/fsl_lpuart.h>
 
-#ifndef NDEBUG
-#include <utilities/fsl_debug_console.h>
-
-#else
+#ifdef NDEBUG
 # undef PRINTF
 # define PRINTF(...)
 #endif
@@ -38,7 +35,7 @@ static volatile int gsmRxIndex, gsmRxHead;
 /**
  * The
  */
-void GSM_UART_IRQ_HANDLER(void) {
+void BOARD_CELL_UART_IRQ_HANDLER(void) {
   if ((kLPUART_RxDataRegFullFlag) & LPUART_GetStatusFlags(BOARD_CELL_UART)) {
     uint8_t data = LPUART_ReadByte(BOARD_CELL_UART);
 
@@ -91,6 +88,8 @@ void sim800h_writeline(const char *buffer) {
 }
 
 void sim800h_power_enable() {
+// if we do have a power domain enable, use it
+#if (BOARD_CELL_PWR_EN_GPIO) && (BOARD_CELL_PWR_EN_PIN)
   const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
   // the clock enable for BOARD_CELL_PWR_EN is done in board.c
   GPIO_PinInit(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, &OUTFALSE);
@@ -104,10 +103,13 @@ void sim800h_power_enable() {
   }
   PRINTF("%d\r\n", bat);
 */
+#endif
 }
 
 void sim800h_power_disable() {
+#if ((BOARD_CELL_PWR_EN_GPIO) && (BOARD_CELL_PWR_EN_PIN))
   GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, false);
+#endif
 }
 
 void sim800h_enable() {
@@ -128,8 +130,11 @@ void sim800h_enable() {
   PORT_SetPinMux(BOARD_CELL_PORT, BOARD_CELL_PWRKEY_PIN, kPORT_MuxAsGpio);
   GPIO_PinInit(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, &OUTTRUE);
 
+  // the ring identifier is optional, only use if a pin and port
+#if BOARD_CELL_RI_PIN
   PORT_SetPinMux(BOARD_CELL_PORT, BOARD_CELL_RI_PIN, kPORT_MuxAsGpio);
   GPIO_PinInit(BOARD_CELL_GPIO, BOARD_CELL_RI_PIN, &IN);
+#endif
 
   // configure uart driver connected to the SIM800H
   lpuart_config_t lpuart_config;

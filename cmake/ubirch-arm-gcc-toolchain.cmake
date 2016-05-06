@@ -68,3 +68,49 @@ else()
   set(CMAKE_C_COMPILER "${ARM_NONE_EABI_GCC}")
   set(CMAKE_CXX_COMPILER "${ARM_NONE_EABI_GPP}")
 endif()
+
+# find the KSDK directory based on it's name
+macro(find_ksdk KSDK_NAME)
+  find_path(KSDK_ROOT_PARENT "${KSDK_NAME}" HINTS "libs" ".." ENV KSDK_ROOT)
+  if (KSDK_ROOT_PARENT)
+    get_filename_component(KSDK_ROOT "${KSDK_NAME}" ABSOLUTE BASE_DIR ${KSDK_ROOT_PARENT})
+    message(STATUS "KSDK: ${KSDK_ROOT}")
+  else ()
+    message(FATAL_ERROR "Could not find Kinetis SDK: ${KSDK_NAME}, searched ../ and libs/")
+  endif ()
+endmacro()
+
+# special settings for boards
+if (BOARD MATCHES "ubirch#1|FRDM-K82F")
+  set(MCU "K82F")
+
+  if(NOT KSDK_ROOT)
+    find_ksdk("SDK_2.0_MK82FN256xxx15")
+  endif()
+
+  set(MCU_SPEC "MK82F25615")
+  set(MCU_SPEC_C_FLAGS "-DCPU_MK82FN256VDC15 -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16")
+  set(MCU_SPEC_FLASH_LD "${KSDK_ROOT}/devices/${MCU_SPEC}/gcc/MK82FN256xxx15_flash.ld")
+  set(MCU_SPEC_LINKER_FLAGS "-T\"${MCU_SPEC_FLASH_LD}\" -static --specs=nano.specs -Wl,--gc-sections  -Wl,-z,muldefs -Wl,--defsym=__stack_size__=0x2000  -Wl,--defsym=__heap_size__=0x2000")
+  message(STATUS "MCU: ${MCU_SPEC}")
+
+  # this MCU has MMCAU support
+  set(MCU_MMCAU 1)
+  include(cmake/ksdk20.cmake)
+
+elseif(BOARD MATCHES "FRDM-KL82Z")
+  set(MCU "KL82Z")
+  if(NOT KSDK_ROOT)
+    find_ksdk("SDK_1.3_MKL82Z")
+  endif()
+
+  set(MCU_SPEC "MKL82Z7")
+  set(MCU_SPEC_C_FLAGS "-DCPU_MKL82Z128VLK7 -mcpu=cortex-m0plus")
+  set(MCU_SPEC_FLASH_LD "${KSDK_ROOT}/platform/devices/${MCU_SPEC}/linker/gcc/MKL82Z128xxx7_flash.ld")
+  set(MCU_SPEC_LINKER_FLAGS "-T\"${MCU_SPEC_FLASH_LD}\" -static --specs=nano.specs -Wl,--gc-sections  -Wl,-z,muldefs -Wl,--defsym=__stack_size__=0x2000  -Wl,--defsym=__heap_size__=0x2000")
+  message(STATUS "MCU: ${MCU_SPEC}")
+
+  include(cmake/ksdk13.cmake)
+else ()
+  message(FATAL_ERROR "Please define BOARD (ubirch#1, FRDM-K82F, FRDM-KL82Z)!")
+endif ()

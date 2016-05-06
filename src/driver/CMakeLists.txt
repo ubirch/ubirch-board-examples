@@ -1,6 +1,4 @@
 add_subdirectory(i2c)
 add_subdirectory(isl29125)
 add_subdirectory(ssd1306)
-if (BOARD MATCHES "^ubirch#1")
-  add_subdirectory(sim800h)
-endif ()
+add_subdirectory(sim800h)
