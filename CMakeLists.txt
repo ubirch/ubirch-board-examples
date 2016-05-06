@@ -10,17 +10,12 @@ if (NOT BOARD)
 endif ()
 message(STATUS "selected board: ${BOARD}")
 
-if (NOT EXISTS "${KSDK_ROOT}/")
-  message(FATAL_ERROR "Missing Kinetis SDK directory, please link or copy into libs/ as '${KSDK_ROOT}'")
-endif ()
-
 project(ubirch-board C CXX ASM)
 
 # include special libs
-include(cmake/mmcau.cmake)
-include(cmake/wolfssl.cmake)
-#include(cmake/ugui.cmake)
-include(cmake/flashutil.cmake)
+include(cmake/Libraries/mmcau.cmake)
+include(cmake/Libraries/wolfssl.cmake)
+include(cmake/Libraries/flashutil.cmake)
 
 add_subdirectory(src/board)
 add_subdirectory(src/driver)

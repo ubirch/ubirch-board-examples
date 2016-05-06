@@ -96,7 +96,7 @@ if (BOARD MATCHES "ubirch#1|FRDM-K82F")
 
   # this MCU has MMCAU support
   set(MCU_MMCAU 1)
-  include(cmake/ksdk20.cmake)
+  include(cmake/Libraries/ksdk20.cmake)
 
 elseif(BOARD MATCHES "FRDM-KL82Z")
   set(MCU "KL82Z")
@@ -110,7 +110,7 @@ elseif(BOARD MATCHES "FRDM-KL82Z")
   set(MCU_SPEC_LINKER_FLAGS "-T\"${MCU_SPEC_FLASH_LD}\" -static --specs=nano.specs -Wl,--gc-sections  -Wl,-z,muldefs -Wl,--defsym=__stack_size__=0x2000  -Wl,--defsym=__heap_size__=0x2000")
   message(STATUS "MCU: ${MCU_SPEC}")
 
-  include(cmake/ksdk13.cmake)
+  include(cmake/Libraries/ksdk13.cmake)
 else ()
   message(FATAL_ERROR "Please define BOARD (ubirch#1, FRDM-K82F, FRDM-KL82Z)!")
 endif ()
