@@ -30,7 +30,8 @@ int main(void) {
   // power on GSM module
   sim800h_power_enable();
 
-  sim800h_expect_urc(9, TIMEOUT);
+  if(!sim800h_expect_urc(9, TIMEOUT))
+    PRINTF("RDY expected, not found\r\n");
 
   // disable echo, we need to check if our command is echoed back, then
   // check for OK - if echo is off we just get a failed ATE0
@@ -80,7 +81,7 @@ int main(void) {
   char buffer[128];
   while (true) {
     buffer[0] = 0;
-    if(sim800h_readline(buffer, 127, TIMEOUT)) {
+    if(sim800h_readline(buffer, 127, 500)) {
       switch (check_urc(buffer)) {
         case -1: {
           PRINTF(">> %s\r\n", buffer);

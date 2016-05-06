@@ -73,7 +73,7 @@ int check_urc(const char *line);
 void sim800h_send(const char *cmd);
 
 /*! expect a specific URC, blocks until it is received */
-void sim800h_expect_urc(int n, uint32_t timeout);
+bool sim800h_expect_urc(int n, uint32_t timeout);
 
 /*!
  * Expect a certain response, blocks util the response received

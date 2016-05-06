@@ -65,7 +65,7 @@ size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout) {
   size_t idx = 0;
   while (true) {
     __WFE();
-    if ((timer_read() - start) >= timeout) break;
+    if ((timer_read() - start) >= (timeout * 1000)) break;
 
     int c = sim800_read();
     if (c == -1) continue;
