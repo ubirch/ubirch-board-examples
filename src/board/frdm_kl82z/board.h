@@ -165,15 +165,4 @@ static inline status_t board_console_init(uint32_t baud) {
   return DbgConsole_Init(BOARD_DEBUG_INSTANCE, baud, BOARD_DEBUG_TYPE, kDebugConsoleLPUART);
 }
 
-/*!
- * @brief Simple busy wait loop.
- * @param ms the milliseconds to delay execution
- */
-static inline void delay(uint32_t ms) {
-  volatile uint32_t ticks = (SystemCoreClock / 100000) * ms * 10;
-  while (ticks--) {
-    __asm("nop");
-  }
-}
-
 #endif // _UBIRCH_BOARD_H_

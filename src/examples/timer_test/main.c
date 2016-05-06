@@ -1,8 +1,8 @@
 /**
- * Most simple test code to run on the ubirch#1.
+ * Timer Test.
  *
  * @author Matthias L. Jugel
- * @date 2016-04-01
+ * @date 2016-04-06
  *
  * Copyright 2016 ubirch GmbH (https://ubirch.com)
  *
@@ -44,31 +44,14 @@ int main(void) {
   board_console_init(BOARD_DEBUG_BAUD);
 
   PRINTF("BOARD TEST\r\n");
-#ifdef BOARD_LED0
-  BOARD_LED0(true);
-  delay(1000);
-  BOARD_LED0(false);
-  delay(500);
-#endif
-#ifdef BOARD_LED1
-  BOARD_LED1(true);
-  delay(1000);
-  BOARD_LED1(false);
-  delay(500);
-#endif
-#ifdef BOARD_LED2
-  BOARD_LED2(true);
-  delay(1000);
-  BOARD_LED2(false);
-  delay(500);
-#endif
-
   SysTick_Config(BOARD_SYSTICK_100MS);
 
-  PRINTF("DEBUG CONSOLE\r\n");
-  while (true) {
-    int ch = GETCHAR();
-    if (ch == '\r') PUTCHAR('\n');
-    PUTCHAR(ch);
+  while(1) {
+    uint32_t start = timer_read();
+    delay(10000);
+    uint32_t end = timer_read();
+
+    PRINTF("%lu-%lu = %lu\r\n", end, start, (end-start) / 1000);
   }
+
 }

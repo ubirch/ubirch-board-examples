@@ -28,6 +28,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /*!
  * A list of unsolicited response codes we need to take care of.
@@ -72,13 +73,13 @@ int check_urc(const char *line);
 void sim800h_send(const char *cmd);
 
 /*! expect a specific URC, blocks until it is received */
-void sim800h_expect_urc(int n);
+void sim800h_expect_urc(int n, uint32_t timeout);
 
 /*!
  * Expect a certain response, blocks util the response received
  * This function will ignore URCs and return when the first non-URC has been received.
  * @return true if received or false if not
  */
-bool sim800h_expect(const char *expected);
+bool sim800h_expect(const char *expected, uint32_t timeout);
 
 #endif // _SIM800H_PARSER_H_

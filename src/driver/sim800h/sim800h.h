@@ -55,7 +55,7 @@ void sim800h_enable();
 int sim800_read();
 
 /*! Read a single line from the SIM800H */
-size_t sim800h_readline(char *buffer, size_t max);
+size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout);
 
 /*! Write a line to the SIM800H and terminate it using CR LF */
 void sim800h_writeline(const char *buffer);

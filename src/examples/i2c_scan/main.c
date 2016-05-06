@@ -28,6 +28,7 @@
 #include <board.h>
 #include <stdio.h>
 #include <i2c.h>
+#include <timer.h>
 
 void SysTick_Handler() {
   static uint32_t counter = 0;

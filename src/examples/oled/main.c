@@ -5,6 +5,7 @@
 #include <i2c.h>
 #include <utilities/fsl_debug_console.h>
 #include <board.h>
+#include <timer.h>
 #include "font5x5.h"
 
 void oled_invert(int row, int column);

@@ -49,19 +49,19 @@ void sim800h_send(const char *cmd) {
   sim800h_writeline(cmd);
 }
 
-void sim800h_expect_urc(int n) {
+void sim800h_expect_urc(int n, uint32_t timeout) {
   char response[128] = {0};
   do {
-    sim800h_readline(response, 127);
+    if(!sim800h_readline(response, 127, timeout)) break;
     PRINTF("GSM .... ?? %s\r\n", response);
   } while (check_urc(response) != n);
 }
 
-bool sim800h_expect(const char *expected) {
+bool sim800h_expect(const char *expected, uint32_t timeout) {
   char response[255] = {0};
   size_t len, expected_len = strlen(expected);
   while (true) {
-    len = sim800h_readline(response, 127);
+    len = sim800h_readline(response, 127, timeout);
     if (check_urc(response) >= 0) continue;
     PRINTF("GSM (%02d) -> %s\r\n", len, response);
     return strncmp(expected, (const char *) response, MIN(len, expected_len)) == 0;

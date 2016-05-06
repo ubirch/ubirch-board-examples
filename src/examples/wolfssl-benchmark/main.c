@@ -33,8 +33,9 @@
 #include <wolfssl/wolfcrypt/signature.h>
 #include <drivers/fsl_pit.h>
 #include <wolfssl/wolfcrypt/ed25519.h>
+#include <timer.h>
 
-#define BENCHMARK_LOOPS 100
+#define BENCHMARK_LOOPS 5
 
 static const char plaintext[] = "We love things.\n0a1b2c3d4e5f6g7h8i9j-UBIRCH\n";
 
@@ -185,37 +186,9 @@ void SysTick_Handler() {
 
 }
 
-static volatile uint64_t ms_time = 0;
-
-void PIT0_IRQHandler() {
-  PIT_ClearStatusFlags(PIT, kPIT_Chnl_0, PIT_TFLG_TIF_MASK);
-  ms_time++;
-}
-
-void init_pit() {
-  pit_config_t pitConfig;
-  PIT_GetDefaultConfig(&pitConfig);
-  PIT_Init(PIT, &pitConfig);
-  PIT_SetTimerPeriod(PIT, kPIT_Chnl_0, (uint32_t) USEC_TO_COUNT(1000U, CLOCK_GetFreq(kCLOCK_BusClk)));
-  PIT_EnableInterrupts(PIT, kPIT_Chnl_0, kPIT_TimerInterruptEnable);
-  PIT_StartTimer(PIT, kPIT_Chnl_0);
-  EnableIRQ(PIT0_IRQn);
-}
-
-static uint64_t start;
-
-#define current_time(x) timer_start()
-
-uint64_t timer_start() {
-  return start = ms_time;
-}
-
-uint64_t timer_stop() {
-  return ms_time - start;
-}
-
-void timestamp(const char *msg, uint64_t ms) {
-  PRINTF("--  %s %lus %lums\r\n", msg, (uint32_t) ms / 1000, (uint32_t) ms % 1000);
+void timestamp(const char *msg, uint32_t us) {
+  const uint32_t ms = (uint32_t) us % 1000000;
+  PRINTF("--  %s %lus %lums %luµs\r\n", msg, (uint32_t) us / 1000000, ms / 1000, ms % 1000);
 }
 
 void print_public_key(RsaKey *key) {
@@ -244,6 +217,8 @@ RsaKey recipient_public_key;
 int genTimes = 1000;
 int agreeTimes = 1000;
 
+#define current_time(n) timer_read()
+
 #ifdef HAVE_ED25519
 void bench_ed25519KeyGen(void)
 {
@@ -261,7 +236,7 @@ void bench_ed25519KeyGen(void)
   }
 
   total = current_time(0) - start;
-  milliEach  = total / genTimes;  /* per second  */
+  milliEach  = total / genTimes / 1000;
   printf("\r\n");
   printf("ED25519  key generation  %6.3f milliseconds, avg over %d"
            " iterations\r\n", milliEach, genTimes);
@@ -305,7 +280,7 @@ void bench_ed25519KeySign(void)
   }
 
   total = current_time(0) - start;
-  milliEach  = total / agreeTimes;  /* per second  */
+  milliEach  = total / agreeTimes / 1000;  /* per second  */
   printf("ED25519  sign   time     %6.3f milliseconds, avg over %d"
            " iterations\r\n", milliEach, agreeTimes);
 
@@ -323,7 +298,7 @@ void bench_ed25519KeySign(void)
   }
 
   total = current_time(0) - start;
-  milliEach  = total / agreeTimes;  /* per second  */
+  milliEach  = total / agreeTimes / 1000;
   printf("ED25519  verify time     %6.3f milliseconds, avg over %d"
            " iterations\r\n", milliEach, agreeTimes);
 #endif /* HAVE_ED25519_VERIFY */
@@ -379,7 +354,6 @@ int main(void) {
   board_console_init(BOARD_DEBUG_BAUD);
 
   SysTick_Config(BOARD_SYSTICK_100MS);
-  init_pit();
 
   PRINTF("ubirch #1 r0.2 RSA encryption/signature benchmark\r\n");
   if (init_trng() != 0) error("failed to initialize TRNG");
@@ -394,11 +368,11 @@ int main(void) {
 
   PRINTF("- signing message with board private key\r\n");
 
-  uint64_t total = 0;
+  uint32_t total = 0;
   int signatureLength = 0;
   byte *signature = NULL;
   for(int i = 0; i < BENCHMARK_LOOPS; i++) {
-    timer_start();
+    const uint32_t start = timer_read();
     signatureLength = wc_SignatureGetSize(WC_SIGNATURE_TYPE_RSA, &board_rsa_key, sizeof(board_rsa_key));
     signature = malloc((size_t) signatureLength);
 
@@ -410,13 +384,13 @@ int main(void) {
       &rng) != 0)
       error("failed to sign plain text message");
 
-    const uint64_t elapsed = timer_stop();
+    const uint32_t elapsed = timer_read() - start;
     total += elapsed;
     char loop_str[64];
     sprintf(loop_str, "%d", i);
     timestamp(loop_str, elapsed);
   }
-  timestamp("Average:", total / BENCHMARK_LOOPS);
+  timestamp("Average:", total / BENCHMARK_LOOPS / 1000);
   PRINTF("-- SIGNATURE\r\n");
 
   PRINTF("- encrypting message\r\n");
@@ -424,18 +398,18 @@ int main(void) {
   total = 0;
   int r = -1;
   for(int i = 0; i < BENCHMARK_LOOPS; i++) {
-    timer_start();
+    const uint32_t start = timer_read();
     r = wc_RsaPublicEncrypt((const byte *) plaintext, plaintextLength, cipher, cipherLength, &recipient_public_key,
                               &rng);
     if (r < 0) error("failed to encrypt message");
 
-    const uint64_t elapsed = timer_stop();
+    const uint32_t elapsed = timer_read() - start;
     total += elapsed;
     char loop_str[64];
     sprintf(loop_str, "%d", i);
     timestamp(loop_str, elapsed);
   }
-  timestamp("Average:", total / BENCHMARK_LOOPS);
+  timestamp("Average:", total / BENCHMARK_LOOPS / 1000);
   PRINTF("-- CIPHER (%d bytes)\r\n", r);
 
   wc_FreeRsaKey(&board_rsa_key);

@@ -7,6 +7,7 @@
 #include <board.h>
 #include <sim800h.h>
 #include <sim800h_parser.h>
+#include <timer.h>
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
@@ -15,6 +16,7 @@ void SysTick_Handler() {
   BOARD_LED0(on);
 }
 
+#define TIMEOUT 5000
 
 int main(void) {
   board_init();
@@ -28,26 +30,22 @@ int main(void) {
   // power on GSM module
   sim800h_power_enable();
 
-  sim800h_send("ATE0");
-  sim800h_expect("OK");
-  sim800h_send("ATE0");
-  if(!sim800h_expect("OK"))
-    sim800h_expect_urc(9);
+  sim800h_expect_urc(9, TIMEOUT);
 
   // disable echo, we need to check if our command is echoed back, then
   // check for OK - if echo is off we just get a failed ATE0
   sim800h_send("ATE0");
-  if (sim800h_expect("ATE0"))
-    sim800h_expect("OK");
+  if (sim800h_expect("ATE0", TIMEOUT))
+    sim800h_expect("OK", TIMEOUT);
 
   PRINTF("----- ECHO OFF\r\n");
 
   sim800h_send("ATV1");
-  sim800h_expect("OK");
+  sim800h_expect("OK", TIMEOUT);
 
   sim800h_send("ATI");
-  sim800h_expect("SIM");
-  sim800h_expect("OK");
+  sim800h_expect("SIM", TIMEOUT);
+  sim800h_expect("OK", TIMEOUT);
 
   PRINTF("----- SIM INFO RECEIVED\r\n");
 
@@ -57,46 +55,48 @@ int main(void) {
     sim800h_send("AT+CREG?");
     // this looks strange because we need to ensure both gsm_expect() calls are made,
     // so expect-1 && expect-2 does not work because of expression evaluation
-    registered = sim800h_expect("+CREG: 0,5");
-    registered = sim800h_expect("OK") && registered;
+    registered = sim800h_expect("+CREG: 0,5", TIMEOUT);
+    registered = sim800h_expect("OK", TIMEOUT) && registered;
   } while (!registered);
 
   PRINTF("----- GSM REGISTERED WITH NETWORK\r\n");
 
   sim800h_send("AT+CIPSHUT");
-  sim800h_expect("SHUT OK");
+  sim800h_expect("SHUT OK", TIMEOUT);
 
   sim800h_send("AT+CIPMUX=1");
-  sim800h_expect("OK");
+  sim800h_expect("OK", TIMEOUT);
 
   sim800h_send("AT+CIPRXGET=1");
-  sim800h_expect("OK");
+  sim800h_expect("OK", TIMEOUT);
 
   do {
     delay(2000);
     sim800h_send("AT+CGATT=1");
-  } while (!sim800h_expect("OK"));
+  } while (!sim800h_expect("OK", TIMEOUT));
 
   PRINTF("----- INIT DONE\r\n");
 
   char buffer[128];
   while (true) {
     buffer[0] = 0;
-    sim800h_readline(buffer, 127);
-    switch (check_urc(buffer)) {
-      case -1: {
-        PRINTF(">> %s\r\n", buffer);
-        break;
+    if(sim800h_readline(buffer, 127, TIMEOUT)) {
+      switch (check_urc(buffer)) {
+        case -1: {
+          PRINTF(">> %s\r\n", buffer);
+          break;
+        }
+        case 13: {
+          sim800h_send("AT+CPOWD=1");
+          break;
+        }
+        case 14: {
+          sim800h_power_disable();
+          break;
+        }
+        default:
+          break;
       }
-      case 13: {
-        sim800h_send("AT+CPOWD=1");
-        break;
-      }
-      case 14: {
-        sim800h_power_disable();
-        break;
-      }
-      default: break;
     }
   }
 }

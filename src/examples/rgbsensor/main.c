@@ -28,6 +28,7 @@
 #include <i2c.h>
 #include <utilities/fsl_debug_console.h>
 #include <board.h>
+#include <timer.h>
 
 #define ISL_327LUX_MAX 65000
 #define ISL_10KLUX_MIN 8000

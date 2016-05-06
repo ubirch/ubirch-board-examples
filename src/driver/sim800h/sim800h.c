@@ -22,6 +22,7 @@
 
 #include "sim800h.h"
 #include <drivers/fsl_lpuart.h>
+#include <timer.h>
 
 #ifdef NDEBUG
 # undef PRINTF
@@ -53,19 +54,21 @@ void BOARD_CELL_UART_IRQ_HANDLER(void) {
 }
 
 int sim800_read() {
-  if((gsmRxHead % GSM_RINGBUFFER_SIZE) == gsmRxIndex) return -1;
+  if ((gsmRxHead % GSM_RINGBUFFER_SIZE) == gsmRxIndex) return -1;
   int c = gsmUartRingBuffer[gsmRxHead++];
   gsmRxHead %= GSM_RINGBUFFER_SIZE;
   return c;
 }
 
-size_t sim800h_readline(char *buffer, size_t max) {
+size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout) {
+  uint32_t start = timer_read();
   size_t idx = 0;
   while (true) {
     __WFE();
+    if ((timer_read() - start) >= timeout) break;
 
     int c = sim800_read();
-    if(c == -1) continue;
+    if (c == -1) continue;
 
     if (c == '\r') continue;
     if (c == '\n') {
