@@ -26,9 +26,9 @@
 #ifndef _SIM800H_PARSER_H_
 #define _SIM800H_PARSER_H_
 
-#include <stddef.h>
 #include <stdbool.h>
-#include <stdint.h>
+
+#define CELL_PARSER_BUFSIZE 255
 
 /*!
  * A list of unsolicited response codes we need to take care of.
@@ -63,6 +63,15 @@ const char *SIM800H_URC[] = {
   NULL
 };
 
+enum sim800h_creg_status {
+    CREG_NOT_SEARCHING,
+    CREG_HOME,
+    CREG_SEARCHING,
+    CREG_DENIED,
+    CREG_UNKNOWN,
+    CREG_ROAMING
+};
+
 /*!
  * Check if this line is an unsolicited result code.
  * @return the code index or -1 if it is no known code
@@ -72,14 +81,29 @@ int check_urc(const char *line);
 /*! send a command */
 void sim800h_send(const char *cmd);
 
-/*! expect a specific URC, blocks until it is received */
+/*!
+ * Expect a specific URC, blocks until it is received or timeout.
+ * @param n the URC number
+ * @return whether the URC has been matched
+ */
 bool sim800h_expect_urc(int n, uint32_t timeout);
 
 /*!
- * Expect a certain response, blocks util the response received
+ * Expect a certain response, blocks util the response received or timeout.
  * This function will ignore URCs and return when the first non-URC has been received.
+ * @param pattern the string to expect
+ * @param timeout how long to wait for the response in ms
  * @return true if received or false if not
  */
 bool sim800h_expect(const char *expected, uint32_t timeout);
+
+/*!
+ * Expect a formatted response, blocks until the response is received or timeout.
+ * This function will ignore URCs and return when the first non-URC has been received.
+ * @param pattern the pattern to match
+ * @param timeout how long to wait for the response in ms
+ * @return the number of matched elements
+ */
+int sim800h_expect_scan(const char *pattern, uint32_t timeout, ...);
 
 #endif // _SIM800H_PARSER_H_

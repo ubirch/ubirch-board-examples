@@ -5,12 +5,14 @@ is built in a way so it may also run on other boards, like the [FRDM-K82F](http:
 or the [FRDM-KL82Z](http://www.nxp.com/products/software-and-tools/hardware-development-tools/freedom-development-boards/freedom-development-board-for-kinetis-ultra-low-power-kl82-mcus:FRDM-KL82Z?fsrch=1&sr=1&pageNum=1)*.
 You will have to select the specific board when running ```cmake``` (see below).
 
-> \* Currently the Kinetis SDK 2.0 is not available for the K82Z.
 
 See the board specifics here:
 
 * [ubirch#1 r0.2](src/board/ubirch1r02)
 * [FRDM-K82F](src/board/frdm_k82f)
+* [FRDM-KL82Z](src/board/frdm_kl82z)\*
+
+> \* Work in progress, the Kinetis SDK 2.0 is not available for the K82Z.
 
 ## Code checkout:
 
@@ -38,7 +40,7 @@ ln -sf $KSDKDIR SDK_2.0_MK82FN256xxx15
 
 Install the arm toolchain gcc and cmake:
 ```
-brew install gcc-arm-none-eabi-49 cmake
+brew install gcc-arm-none-eabi-49 cmake cgdb
 ```
 
 Also download the [SEGGER J-Link Debugger](https://www.segger.com/jlink-software.html) for the JLinkGDBServer.
@@ -67,10 +69,11 @@ JLinkGDBServer  -if SWD -device MK82FN256xxx15 -port 2331
 ### 2. Start the serial debug console
 
 ```
-screen /dev/cu.SLAB-to-UART 115200
+screen /dev/cu.SLAB_USBtoUART 115200
 ```
 
 > Use another device (i.e. ```/dev/cu.usbmodem1243```) if you have a different adapter.
+> Refer to the board if you need specific information on how to connect.
 
 ### 3. Start the debugger (gdb)
 

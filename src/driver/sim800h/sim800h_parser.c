@@ -20,16 +20,19 @@
  * limitations under the License.
  */
 #include <string.h>
-#include "sim800h_parser.h"
 #include "sim800h.h"
+#include "sim800h_parser.h"
 
 #ifndef NDEBUG
+
 #include <utilities/fsl_debug_console.h>
+#include <stdarg.h>
+#include <stdio.h>
+
 #else
 # undef PRINTF
 # define PRINTF(...)
 #endif
-
 
 int check_urc(const char *line) {
   size_t len = strlen(line);
@@ -52,7 +55,7 @@ void sim800h_send(const char *cmd) {
 bool sim800h_expect_urc(int n, uint32_t timeout) {
   char response[128] = {0};
   do {
-    if(!sim800h_readline(response, 127, timeout)) return false;
+    if (!sim800h_readline(response, CELL_PARSER_BUFSIZE, timeout)) return false;
     PRINTF("GSM .... ?? %s\r\n", response);
   } while (check_urc(response) != n);
   return true;
@@ -62,9 +65,27 @@ bool sim800h_expect(const char *expected, uint32_t timeout) {
   char response[255];
   size_t len, expected_len = strlen(expected);
   while (true) {
-    len = sim800h_readline(response, 127, timeout);
+    len = sim800h_readline(response, CELL_PARSER_BUFSIZE, timeout);
     if (check_urc(response) >= 0) continue;
     PRINTF("GSM (%02d) -> %s\r\n", len, response);
     return strncmp(expected, (const char *) response, MIN(len, expected_len)) == 0;
   }
 }
+
+int sim800h_expect_scan(const char *pattern, uint32_t timeout, ...) {
+  char response[CELL_PARSER_BUFSIZE];
+  va_list ap;
+  size_t len;
+
+  do {
+    len = sim800h_readline(response, CELL_PARSER_BUFSIZE-1, timeout);
+  } while(check_urc(response) != -1);
+  PRINTF("GSM (%02d) -> %s\r\n", len, response);
+
+  va_start(ap, timeout);
+  int matched = vsscanf(response, pattern, ap);
+  va_end(ap);
+
+  return matched;
+}
+

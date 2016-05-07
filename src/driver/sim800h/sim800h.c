@@ -21,8 +21,13 @@
  */
 
 #include "sim800h.h"
+#include "sim800h_parser.h"
 #include <drivers/fsl_lpuart.h>
 #include <timer.h>
+
+#ifndef BOARD_CELL_PORT
+#  error "No PORT found for cell phone chip. please configure ports/pins/clocks!"
+#endif
 
 #ifdef NDEBUG
 # undef PRINTF
@@ -53,7 +58,7 @@ void BOARD_CELL_UART_IRQ_HANDLER(void) {
   }
 }
 
-int sim800_read() {
+int sim800h_read() {
   if ((gsmRxHead % GSM_RINGBUFFER_SIZE) == gsmRxIndex) return -1;
   int c = gsmUartRingBuffer[gsmRxHead++];
   gsmRxHead %= GSM_RINGBUFFER_SIZE;
@@ -67,7 +72,7 @@ size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout) {
     __WFE();
     if ((timer_read() - start) >= (timeout * 1000)) break;
 
-    int c = sim800_read();
+    int c = sim800h_read();
     if (c == -1) continue;
 
     if (c == '\r') continue;
@@ -110,6 +115,8 @@ void sim800h_power_enable() {
 }
 
 void sim800h_power_disable() {
+  sim800h_send("AT+CPOWD=1");
+  sim800h_expect_urc(14, 1000);
 #if ((BOARD_CELL_PWR_EN_GPIO) && (BOARD_CELL_PWR_EN_PIN))
   GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, false);
 #endif
@@ -152,10 +159,14 @@ void sim800h_enable() {
   LPUART_EnableInterrupts(BOARD_CELL_UART, kLPUART_RxDataRegFullInterruptEnable);
   EnableIRQ(BOARD_CELL_UART_IRQ);
 
-  // power on the SIM800H
-  GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, true);
-  delay(10); //10ms
-  GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, false);
-  delay(1100); // 1.1s
-  GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, true);
+  sim800h_send("ATE0");
+  sim800h_send("ATE0");
+  if (!sim800h_expect("OK", 200)) {
+    // power on the SIM800H
+    GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, true);
+    delay(10); //10ms
+    GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, false);
+    delay(1100); // 1.1s
+    GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, true);
+  }
 }

@@ -131,7 +131,7 @@ typedef struct RGB24 {
  * @param reg the register to write
  * @param data the value to write
  */
-void isl_set(uint8_t reg, uint8_t data);
+bool isl_set(uint8_t reg, uint8_t data);
 
 /**
  * Get current setup from a register on the sensor.

@@ -25,8 +25,8 @@
 #include <i2c.h>
 #include "isl29125.h"
 
-void isl_set(uint8_t reg, uint8_t data) {
-  i2c_write(ISL_DEVICE_ADDRESS, reg, &data, 1);
+bool isl_set(uint8_t reg, uint8_t data) {
+  return i2c_write(ISL_DEVICE_ADDRESS, reg, &data, 1) == kStatus_Success;
 }
 
 uint8_t isl_get(uint8_t reg) {

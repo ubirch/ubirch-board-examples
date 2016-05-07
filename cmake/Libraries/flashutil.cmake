@@ -34,7 +34,7 @@ macro(prepare_flash NAME)
       COMMAND ${CMAKE_GDB} -x ${GDBINIT}_flash --batch $<TARGET_FILE_DIR:${NAME}>/${NAME}.elf
       )
   else ()
-    ADD_CUSTOM_COMMAND(TARGET ${NAME} POST_BUILD
+    add_custom_command(TARGET ${NAME} POST_BUILD
       COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${NAME}> $<TARGET_FILE_DIR:${NAME}>/${NAME}.bin
       )
     add_custom_target(${NAME}-flash
@@ -43,7 +43,8 @@ macro(prepare_flash NAME)
       )
   endif ()
   # print out some helpful hints to debug
-  add_custom_command(TARGET ${NAME} POST_BUILD
+  add_custom_target(${NAME}-gdb
+    DEPENDS ${NAME}
     COMMAND echo "==== DEBUG COMMAND ====="
     COMMAND echo cgdb -d ${CMAKE_GDB} -x ${GDBINIT} $<TARGET_FILE_DIR:${NAME}>/${NAME}.elf
     COMMAND echo "========================")

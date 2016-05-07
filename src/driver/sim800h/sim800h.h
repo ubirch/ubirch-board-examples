@@ -28,10 +28,8 @@
 #ifndef UBIRCH_SIM800_H
 #define UBIRCH_SIM800_H
 
-#include <board.h>
-#ifndef BOARD_CELL_PORT
-#  error "No PORT found for cell phone chip. please configure ports/pins/clocks!"
-#endif
+#include <stddef.h>
+#include <stdint.h>
 
 /*!
  * Enable the power domain for the SIM800H.
@@ -52,7 +50,7 @@ void sim800h_enable();
  * Read a single byte from the ringbuffer.
  * @return character or -1 if no data available
  */
-int sim800_read();
+int sim800h_read();
 
 /*! Read a single line from the SIM800H */
 size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout);

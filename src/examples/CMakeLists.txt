@@ -1,6 +1,7 @@
 add_subdirectory(gsm_commands)
 add_subdirectory(gsm_console)
 add_subdirectory(i2c_scan)
+add_subdirectory(lights-sensor)
 add_subdirectory(lpuart)
 add_subdirectory(oled)
 add_subdirectory(rgbsensor)

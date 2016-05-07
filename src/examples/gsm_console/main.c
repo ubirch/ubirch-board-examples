@@ -13,7 +13,7 @@ static volatile uint8_t idx = 0;
 
 void SysTick_Handler() {
   // we misuse the systick handler to read from the sim800h ringbuffer
-  int c = sim800_read();
+  int c = sim800h_read();
   if(c != -1 && idx < 127 && c != '\r') {
     if(c == '\n') {
       buffer[idx] = '\0';
