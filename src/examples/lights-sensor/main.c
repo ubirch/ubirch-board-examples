@@ -33,6 +33,7 @@
 #include <sim800h.h>
 #include <sim800h_parser.h>
 #include <sim800h_ops.h>
+#include "config.h"
 
 #define TIMEOUT 5000
 
@@ -155,7 +156,7 @@ int main(void) {
     sim800h_enable();
     sim800h_register(TIMEOUT);
 
-    sim800h_gprs_attach()
+    sim800h_gprs_attach(CELL_APN, CELL_USER, CELL_PWD, 30000);
 
 
     // switch off GSM module

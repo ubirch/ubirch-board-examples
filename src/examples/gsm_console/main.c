@@ -7,8 +7,8 @@
 #include <board.h>
 #include <stdio.h>
 #include <sim800h.h>
-#include <sim800h_parser.h>
 #include <sim800h_ops.h>
+#include "config.h"
 
 static char buffer[128];
 static volatile uint16_t idx = 0;
@@ -37,7 +37,7 @@ int main(void) {
   sim800h_init();
   sim800h_enable();
   sim800h_register(60000);
-  sim800h_gprs_attach(60000);
+  sim800h_gprs_attach(CELL_APN, CELL_USER, CELL_PWD, 60000);
 
   SysTick_Config(BOARD_SYSTICK_100MS);
 
@@ -59,8 +59,6 @@ int main(void) {
   }
 
   sim800h_disable();
-
-  SysTick_Config(BOARD_SYSTICK_1000MS);
 
   return 0;
 }
