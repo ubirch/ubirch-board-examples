@@ -23,18 +23,18 @@
 #include <board.h>
 #include "rtc.h"
 
-static rtc_datetime_handler_t _handler= NULL;
+static rtc_datetime_handler_t _handler = NULL;
 
 /*!
-* @brief ISR for Alarm interrupt
-*
-* This function changes the state of busyWait.
-*/
+ * @brief ISR for alarm interrupt.
+ * Switches off the alarm after the event and calls the handler if
+ * one is attached.
+ */
 void RTC_IRQHandler(void) {
   if (RTC_GetStatusFlags(BOARD_RTC) & kRTC_AlarmFlag) {
     RTC_ClearStatusFlags(BOARD_RTC, kRTC_AlarmFlag);
     RTC_DisableInterrupts(BOARD_RTC, kRTC_AlarmInterruptEnable);
-    if(_handler != NULL) {
+    if (_handler != NULL) {
       rtc_datetime_t datetime;
       RTC_GetDatetime(RTC, &datetime);
       _handler(&datetime);
@@ -75,9 +75,9 @@ void rtc_set_alarm_in(const uint32_t seconds) {
 }
 
 void rtc_attach(rtc_datetime_handler_t handler) {
+  __disable_irq();
   _handler = handler;
+  __enable_irq();
 }
 
-void rtc_detach() {
-  _handler = NULL;
-}
+extern void rtc_dettach();

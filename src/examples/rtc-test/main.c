@@ -1,5 +1,6 @@
 #include <board.h>
 #include "../../driver/rtc/rtc.h"
+#include "../../driver/sim800h/sim800h.h"
 
 bool alarm_triggered = false;
 
@@ -13,6 +14,9 @@ void alarm(rtc_datetime_t *date) {
 int main(void) {
   board_init();
   board_console_init(BOARD_DEBUG_BAUD);
+
+  sim800h_init();
+  sim800h_enable();
 
   rtc_init();
   rtc_attach(alarm);

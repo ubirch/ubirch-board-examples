@@ -53,12 +53,14 @@ void sim800h_send(const char *cmd) {
 }
 
 bool sim800h_expect_urc(int n, uint32_t timeout) {
-  char response[128] = {0};
+  char response[128];
+  bool urc_found = false;
   do {
-    if (!sim800h_readline(response, CELL_PARSER_BUFSIZE, timeout)) return false;
-    PRINTF("GSM .... ?? %s\r\n", response);
-  } while (check_urc(response) != n);
-  return true;
+    if (!sim800h_readline(response, CELL_PARSER_BUFSIZE, timeout)) break;
+    urc_found = check_urc(response) == n;
+    if(!urc_found) PRINTF("GSM .... ?? '%s'\r\n", response);
+  } while(!urc_found);
+  return urc_found;
 }
 
 bool sim800h_expect(const char *expected, uint32_t timeout) {
@@ -66,6 +68,8 @@ bool sim800h_expect(const char *expected, uint32_t timeout) {
   size_t len, expected_len = strlen(expected);
   while (true) {
     len = sim800h_readline(response, CELL_PARSER_BUFSIZE, timeout);
+    if(len == 0) return false;
+
     if (check_urc(response) >= 0) continue;
     PRINTF("GSM (%02d) -> %s\r\n", len, response);
     return strncmp(expected, (const char *) response, MIN(len, expected_len)) == 0;

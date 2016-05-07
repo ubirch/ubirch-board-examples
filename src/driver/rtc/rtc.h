@@ -54,6 +54,6 @@ void rtc_set_alarm_in(const uint32_t seconds);
 void rtc_attach(rtc_datetime_handler_t handler);
 
 /*! @brief Detach alarm handler. */
-void rtc_detach();
+static inline void rtc_detach() { rtc_attach(NULL); }
 
 #endif // _UBIRCH_TIMER_H

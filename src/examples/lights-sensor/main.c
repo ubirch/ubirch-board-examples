@@ -130,8 +130,6 @@ int main(void) {
   board_console_init(BOARD_DEBUG_BAUD);
   PRINTF("ubirch lights-sensor v2.0\r\n");
 
-//  SysTick_Config(BOARD_SYSTICK_100MS);
-
   // initialize the I2C bus
   i2c_init(i2c_config);
   // prepare GSM module

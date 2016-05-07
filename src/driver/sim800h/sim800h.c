@@ -58,71 +58,7 @@ void BOARD_CELL_UART_IRQ_HANDLER(void) {
   }
 }
 
-int sim800h_read() {
-  if ((gsmRxHead % GSM_RINGBUFFER_SIZE) == gsmRxIndex) return -1;
-  int c = gsmUartRingBuffer[gsmRxHead++];
-  gsmRxHead %= GSM_RINGBUFFER_SIZE;
-  return c;
-}
-
-size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout) {
-  uint32_t start = timer_read();
-  size_t idx = 0;
-  while (true) {
-    __WFE();
-    if ((timer_read() - start) >= (timeout * 1000)) break;
-
-    int c = sim800h_read();
-    if (c == -1) continue;
-
-    if (c == '\r') continue;
-    if (c == '\n') {
-      if (!idx) {
-        idx = 0;
-        continue;
-      }
-      break;
-    }
-    if (max - idx) buffer[idx++] = (char) c;
-  }
-
-  buffer[idx] = 0;
-  return idx;
-}
-
-void sim800h_writeline(const char *buffer) {
-  LPUART_WriteBlocking(BOARD_CELL_UART, (const uint8_t *) buffer, strlen(buffer));
-  LPUART_WriteBlocking(BOARD_CELL_UART, (const uint8_t *) "\r\n", 2);
-}
-
-void sim800h_power_enable() {
-// if we do have a power domain enable, use it
-#if (BOARD_CELL_PWR_EN_GPIO) && (BOARD_CELL_PWR_EN_PIN)
-  const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
-  // the clock enable for BOARD_CELL_PWR_EN is done in board.c
-  GPIO_PinInit(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, &OUTFALSE);
-  GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, true);
-
-  // TODO check power for GSM chip
-/*
-  uint16_t bat;
-  while ((bat = VBat_Read()) < 2000) {
-    PRINTF("%d\r", bat);
-  }
-  PRINTF("%d\r\n", bat);
-*/
-#endif
-}
-
-void sim800h_power_disable() {
-  sim800h_send("AT+CPOWD=1");
-  sim800h_expect_urc(14, 1000);
-#if ((BOARD_CELL_PWR_EN_GPIO) && (BOARD_CELL_PWR_EN_PIN))
-  GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, false);
-#endif
-}
-
-void sim800h_enable() {
+void sim800h_init() {
   const gpio_pin_config_t OUTTRUE = {kGPIO_DigitalOutput, true};
   const gpio_pin_config_t IN = {kGPIO_DigitalInput, false};
 
@@ -158,15 +94,110 @@ void sim800h_enable() {
 
   LPUART_EnableInterrupts(BOARD_CELL_UART, kLPUART_RxDataRegFullInterruptEnable);
   EnableIRQ(BOARD_CELL_UART_IRQ);
+}
 
-  sim800h_send("ATE0");
-  sim800h_send("ATE0");
-  if (!sim800h_expect("OK", 200)) {
+void sim800h_enable() {
+#if (BOARD_CELL_PWR_EN_GPIO) && (BOARD_CELL_PWR_EN_PIN)
+  // enable power domain and check that VBAT reading is above 2000
+  const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
+  // the clock enable for BOARD_CELL_PWR_EN is done in board.c
+  GPIO_PinInit(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, &OUTFALSE);
+  GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, true);
+
+  // TODO check power for GSM chip
+/*
+  uint16_t bat;
+  while ((bat = VBat_Read()) < 2000) {
+    PRINTF("%d\r", bat);
+  }
+  PRINTF("%d\r\n", bat);
+*/
+#endif
+
+  // after enabling power, power on the SIM800
+  char tmp[10];
+  size_t len;
+
+  // we need to identify if the chip is already on by sending AT commands
+  // send AT and just ignore the echo and OK to get into a stable state
+  // sometimes there is initial noise on the serial line
+  sim800h_writeline("AT");
+  sim800h_readline(tmp, 9, 100);
+  sim800h_readline(tmp, 9, 100);
+
+  // now identify if the chip is actually on, by issue AT and expecting something
+  // if we can't read a response, either AT or OK, we need to run the power on sequence
+  sim800h_writeline("AT");
+  len = sim800h_readline(tmp, 9, 1000);
+  if(!len) {
+    PRINTF("GSM -OFF !! PWRKEY\r\n");
     // power on the SIM800H
     GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, true);
     delay(10); //10ms
     GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, false);
     delay(1100); // 1.1s
     GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, true);
+  } else {
+    PRINTF("GSM -ON- !! OK\r\n");
+  }
+
+  // wait for the chip to boot and react to commands
+  for(int i = 0; i < 5; i++) {
+    sim800h_writeline("ATE0");
+    // if we can't read anything, try again
+    if(!sim800h_readline(tmp, 9, 5000)) continue;
+    // if the result is ATE0 instead of OK, expect OK next, else leave it be
+    if (!strncmp(tmp, "ATE0", MIN(len, 4)))
+      sim800h_readline(tmp, 9, 5000);
+    break;
   }
 }
+
+void sim800h_disable() {
+  // try to power down the SIM800, then switch off power domain
+  sim800h_send("AT+CPOWD=1");
+  sim800h_expect_urc(14, 1000);
+
+#if ((BOARD_CELL_PWR_EN_GPIO) && (BOARD_CELL_PWR_EN_PIN))
+  GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, false);
+#endif
+}
+
+int sim800h_read() {
+  if ((gsmRxHead % GSM_RINGBUFFER_SIZE) == gsmRxIndex) return -1;
+  int c = gsmUartRingBuffer[gsmRxHead++];
+  gsmRxHead %= GSM_RINGBUFFER_SIZE;
+  return c;
+}
+
+size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout) {
+  uint32_t us_target = timer_read() + timeout * 1000;
+  timer_schedule(us_target);
+  size_t idx = 0;
+  while (true) {
+    __WFI();
+    if (timer_read() >= us_target) break;
+
+    int c = sim800h_read();
+    if (c == -1) continue;
+
+    if (c == '\r') continue;
+    if (c == '\n') {
+      if (!idx) {
+        idx = 0;
+        continue;
+      }
+      break;
+    }
+    if (max - idx) buffer[idx++] = (char) c;
+  }
+
+  buffer[idx] = 0;
+  return idx;
+}
+
+void sim800h_writeline(const char *buffer) {
+  LPUART_WriteBlocking(BOARD_CELL_UART, (const uint8_t *) buffer, strlen(buffer));
+  LPUART_WriteBlocking(BOARD_CELL_UART, (const uint8_t *) "\r\n", 2);
+}
+

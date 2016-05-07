@@ -35,16 +35,16 @@
  * Enable the power domain for the SIM800H.
  * Returns as soon as the voltage is high enough to make the chip work.
  */
-void sim800h_power_enable();
+void sim800h_enable();
 
 /*! Disable the power domain for the SIM800H */
-void sim800h_power_disable();
+void sim800h_disable();
 /*!
  * Enable communication with the SIM800H.
  * This actually configures the UART and powers/resets the chip to
  * start a fresh cycle.
  */
-void sim800h_enable();
+void sim800h_init();
 
 /*!
  * Read a single byte from the ringbuffer.

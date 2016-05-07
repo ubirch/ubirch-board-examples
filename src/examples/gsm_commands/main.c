@@ -24,11 +24,8 @@ int main(void) {
 
   SysTick_Config(BOARD_SYSTICK_100MS);
 
-  // prepare GSM module
+  sim800h_init();
   sim800h_enable();
-
-  // power on GSM module
-  sim800h_power_enable();
 
   if(!sim800h_expect_urc(9, TIMEOUT))
     PRINTF("RDY expected, not found\r\n");
@@ -92,7 +89,7 @@ int main(void) {
           break;
         }
         case 14: {
-          sim800h_power_disable();
+          sim800h_disable();
           break;
         }
         default:
