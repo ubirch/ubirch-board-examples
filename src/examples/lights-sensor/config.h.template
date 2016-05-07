@@ -1,0 +1,8 @@
+#ifndef _LIGHTS_SENSOR_H_
+#define _LIGHTS_SENSOR_H_
+
+#define LIGHTS_SENSOR_APN ""
+#define LIGHTS_SENSOR_USER ""
+#define LIGHTS_SENSOR__PWD ""
+
+#endif //_LIGHTS_SENSOR_H_

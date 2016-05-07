@@ -130,10 +130,8 @@ int main(void) {
   board_console_init(BOARD_DEBUG_BAUD);
   PRINTF("ubirch lights-sensor v2.0\r\n");
 
-  // initialize the I2C bus
   i2c_init(i2c_config);
-  // prepare GSM module
-  // sim800h_power_enable();
+  sim800h_init();
 
   while (true) {
     rgb48_t rgb48;
@@ -152,16 +150,16 @@ int main(void) {
     }
     PRINTF("+RGB(%s, %lu,%lu,%lu)\r\n", sensitivity == ISL_MODE_375LUX ? "375LUX" : "10KLUX", rgb48.red, rgb48.green, rgb48.blue);
 
-/*
     // power on GSM module
-    sim800h_send("ATE0");
-    sim800h_send("ATE0");
-    sim800h_expect("OK", TIMEOUT);
+
+    sim800h_enable();
     sim800h_register(TIMEOUT);
 
+    sim800h_gprs_attach()
+
+
     // switch off GSM module
-    sim800h_power_disable();
-*/
+    sim800h_disable();
 
     delay(5000);
   }

@@ -1,0 +1,8 @@
+#ifndef _RTC_TEST_H_
+#define _RTC_TEST_H_
+
+#define RTC_TEST_APN ""
+#define RTC_TEST_USER ""
+#define RTC_TEST_PWD ""
+
+#endif //_RTC_TEST_H_

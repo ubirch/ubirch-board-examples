@@ -2,6 +2,7 @@
 #include <rtc.h>
 #include <sim800h.h>
 #include <sim800h_ops.h>
+#include "config.h"
 
 #define CELL_ENABLED 1
 
@@ -24,7 +25,7 @@ int main(void) {
     sim800h_enable();
 
     sim800h_register(30000);
-    sim800h_gprs_attach("eseye.com", "ubirch", "internet", 30000);
+    sim800h_gprs_attach(RTC_TEST_APN, RTC_TEST_USER, RTC_TEST_PWD, 30000);
 
     short int loc_status;
     short int bat_status, bat_level;

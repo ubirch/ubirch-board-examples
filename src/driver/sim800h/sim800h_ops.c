@@ -26,6 +26,7 @@
 #include <fsl_rtc.h>
 #include <stdlib.h>
 #include "sim800h_parser.h"
+#include "sim800h.h"
 
 #ifndef NDEBUG
 static const char *reg_status[6] = {
@@ -137,4 +138,10 @@ bool sim800h_location(short int *status, double *lat, double *lon, rtc_datetime_
   datetime->second = (uint8_t) atoi(strtok(NULL, ":"));
 
   return sim800h_expect("OK", 500);
+}
+
+bool sim800h_imei(char *imei) {
+  sim800h_send("AT+GSN");
+  sim800h_readline(imei, 16, 1000);
+  return sim800h_expect("OK", 1000);
 }
