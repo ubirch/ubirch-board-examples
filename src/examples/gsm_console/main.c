@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <sim800h.h>
 #include <sim800h_parser.h>
+#include <sim800h_ops.h>
 
 static char buffer[128];
 static volatile uint16_t idx = 0;
@@ -35,6 +36,8 @@ int main(void) {
 
   sim800h_init();
   sim800h_enable();
+  sim800h_register(60000);
+  sim800h_gprs_attach(60000);
 
   SysTick_Config(BOARD_SYSTICK_100MS);
 

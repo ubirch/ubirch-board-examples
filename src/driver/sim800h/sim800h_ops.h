@@ -25,11 +25,18 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <fsl_rtc.h>
 
 /*!
  * @brief Register to the cell network.
  * @param timeout how long to wait until registration
  */
 bool sim800h_register(uint32_t timeout);
+
+bool sim800h_gprs_attach(const char *apn, const char *user, const char *password, uint32_t timeout);
+
+bool sim800h_battery(short int *status, short int *level, int *voltage, uint32_t timeout);
+
+bool sim800h_location(short int *status, double *lat, double *lon, rtc_datetime_t *datetime, uint32_t timeout);
 
 #endif // _UBIRCH_SIM800H_OPS_H_

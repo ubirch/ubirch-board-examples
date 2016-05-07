@@ -47,31 +47,46 @@ int check_urc(const char *line) {
   return -1;
 }
 
-void sim800h_send(const char *cmd) {
-  PRINTF("GSM (%02d) <- %s\r\n", strlen(cmd), cmd);
+void sim800h_send(const char *pattern, ...) {
+  char cmd[255];
+  va_list ap;
+  va_start(ap, pattern);
+  vsnprintf(cmd, 254, pattern, ap);
+  va_end(ap);
+
+  // cleanup the input buffer
+  while(sim800h_read() != -1);
+  PRINTF("GSM (%02d) <- '%s'\r\n", strlen(cmd), cmd);
   sim800h_writeline(cmd);
 }
 
 bool sim800h_expect_urc(int n, uint32_t timeout) {
-  char response[128];
+  char response[128] = {0};
   bool urc_found = false;
   do {
-    if (!sim800h_readline(response, CELL_PARSER_BUFSIZE, timeout)) break;
-    urc_found = check_urc(response) == n;
-    if(!urc_found) PRINTF("GSM .... ?? '%s'\r\n", response);
+    const size_t len = sim800h_readline(response, CELL_PARSER_BUFSIZE, timeout);
+    if (!len) break;
+    int r = check_urc(response);
+    urc_found = r == n;
+#ifndef NDEBUG
+    if(r == 0 && !urc_found) {
+      PRINTF("GSM .... ?? ");
+      for(int i = 0; i < len; i++) PRINTF("%02x '%c' ", *(response+i), *(response+i));
+      PRINTF("\r\n");
+    }
+#endif
   } while(!urc_found);
   return urc_found;
 }
 
 bool sim800h_expect(const char *expected, uint32_t timeout) {
-  char response[255];
+  char response[255] = {0};
   size_t len, expected_len = strlen(expected);
   while (true) {
     len = sim800h_readline(response, CELL_PARSER_BUFSIZE, timeout);
     if(len == 0) return false;
-
     if (check_urc(response) >= 0) continue;
-    PRINTF("GSM (%02d) -> %s\r\n", len, response);
+    PRINTF("GSM (%02d) -> '%s'\r\n", len, response);
     return strncmp(expected, (const char *) response, MIN(len, expected_len)) == 0;
   }
 }
@@ -80,11 +95,10 @@ int sim800h_expect_scan(const char *pattern, uint32_t timeout, ...) {
   char response[CELL_PARSER_BUFSIZE];
   va_list ap;
   size_t len;
-
   do {
     len = sim800h_readline(response, CELL_PARSER_BUFSIZE-1, timeout);
   } while(check_urc(response) != -1);
-  PRINTF("GSM (%02d) -> %s\r\n", len, response);
+  PRINTF("GSM (%02d) -> '%s'\r\n", len, response);
 
   va_start(ap, timeout);
   int matched = vsscanf(response, pattern, ap);

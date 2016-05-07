@@ -79,7 +79,7 @@ enum sim800h_creg_status {
 int check_urc(const char *line);
 
 /*! send a command */
-void sim800h_send(const char *cmd);
+void sim800h_send(const char *pattern, ...);
 
 /*!
  * Expect a specific URC, blocks until it is received or timeout.
