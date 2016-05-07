@@ -1,6 +1,8 @@
 /**
  * ubirch#1 timer driver code.
  *
+ * Based on https://github.com/mbedmicro/mbed/blob/master/libraries/mbed/targets/hal/TARGET_Freescale/TARGET_KSDK2_MCUS/TARGET_K64F/us_ticker.c
+ *
  * @author Matthias L. Jugel
  * @date 2016-04-06
  *
@@ -27,7 +29,8 @@
 static bool initialized = false;
 
 void PIT3_IRQHandler() {
-  PIT_ClearStatusFlags(PIT, kPIT_Chnl_3, PIT_TFLG_TIF_MASK);
+  PIT_ClearStatusFlags(PIT, kPIT_Chnl_3, kPIT_TimerFlag);
+  PIT_DisableInterrupts(PIT, kPIT_Chnl_3, kPIT_TimerInterruptEnable);
 }
 
 void timer_init() {
@@ -53,13 +56,12 @@ uint32_t timer_read() {
   return ~(PIT_GetCurrentTimerCount(PIT, kPIT_Chnl_1));
 }
 
-// based on https://github.com/mbedmicro/mbed/blob/master/libraries/mbed/targets/hal/TARGET_Freescale/TARGET_KSDK2_MCUS/TARGET_K64F/us_ticker.c
 void timer_schedule(uint32_t timestamp) {
   int delta = (int)(timestamp - timer_read());
   if (delta <= 0) {
     // This event was in the past.
     // Set the interrupt as pending, but don't process it here.
-    // This prevents a recurive loop under heavy load
+    // This prevents a recursive loop under heavy load
     // which can lead to a stack overflow.
     NVIC_SetPendingIRQ(PIT3_IRQn);
     return;

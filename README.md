@@ -77,7 +77,7 @@ screen /dev/cu.SLAB_USBtoUART 115200
 
 ### 3. Start the debugger (gdb)
 
-I recommend [cgdb](https://cgdb.github.io/) (install via ```brew install cgdb```) as it is somewhat easier to see where you currently are in your code.
+I recommend [cgdb](https://cgdb.github.io/) as it is somewhat easier to see where you currently are in your code.
 
 For flashing and debugging cd into the corresponding sub-directory:
 ```

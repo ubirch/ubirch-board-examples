@@ -89,6 +89,9 @@
 #define BOARD_I2C_SCL_PIN       2U
 #define BOARD_I2C_SDA_PIN       3U
 
+#define BOARD_RTC               RTC
+#define BOARD_RTC_CLOCK         RTC_CR_OSCE_MASK
+
 // (debug) console                             `
 //! LPUART0 (RX - PTB16, TX - PTB17)
 #define BOARD_DEBUG_TYPE        DEBUG_CONSOLE_DEVICE_TYPE_LPUART

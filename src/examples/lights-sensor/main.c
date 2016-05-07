@@ -57,8 +57,8 @@
 #define E_NO_MEMORY     0b10000000
 #define E_NO_CONNECTION 0b01000000
 
-#define ISL_327LUX_MAX 65000
-#define ISL_10KLUX_MIN 8000
+#define ISL_375LUX_MAX 65000
+#define ISL_10KLUX_MIN 3000
 
 // i2c configuration, based on the board used
 static const i2c_config_t i2c_config = {
@@ -102,13 +102,13 @@ bool sample_rgb(rgb48_t *color, uint8_t color_mode) {
   }
   // we need to set the filter first, then as sampling starts with the 0x01 (COLOR_MODE) register
   if (!isl_set(ISL_R_FILTERING, infrared_filter)) {
-    PRINTF("ISL29125 set infrared filtering failed");
+    PRINTF("ISL29125 set infrared filtering failed\r\n");
     error_flag |= E_SENSOR_FAILED;
     return false;
   }
   // set sensitivity and color mode and start sampling
   if (!isl_set(ISL_R_COLOR_MODE, (uint8_t) (color_mode | ISL_MODE_16BIT | ISL_MODE_RGB))) {
-    PRINTF("ISL29125 ir config failed");
+    PRINTF("ISL29125 ir config failed\r\n");
     error_flag |= E_SENSOR_FAILED;
     return false;
   }
@@ -140,10 +140,11 @@ int main(void) {
   while (true) {
     rgb48_t rgb48;
     sample_rgb(&rgb48, sensitivity);
+    PRINTF("-RGB(%s, %lu,%lu,%lu)\r\n", sensitivity == ISL_MODE_375LUX ? "375LUX" : "10KLUX", rgb48.red, rgb48.green, rgb48.blue);
 
     // auto-compensate for brightness
     if (sensitivity == ISL_MODE_375LUX &&
-        rgb48.red > ISL_327LUX_MAX && rgb48.green > ISL_327LUX_MAX && rgb48.blue > ISL_327LUX_MAX) {
+        rgb48.red > ISL_375LUX_MAX && rgb48.green > ISL_375LUX_MAX && rgb48.blue > ISL_375LUX_MAX) {
       sensitivity = ISL_MODE_10KLUX;
       sample_rgb(&rgb48, sensitivity);
     } else if (sensitivity == ISL_MODE_10KLUX &&
@@ -151,7 +152,7 @@ int main(void) {
       sensitivity = ISL_MODE_375LUX;
       sample_rgb(&rgb48, sensitivity);
     }
-    PRINTF("-RGB(%lu,%lu,%lu)\r\n", rgb48.red, rgb48.green, rgb48.blue);
+    PRINTF("+RGB(%s, %lu,%lu,%lu)\r\n", sensitivity == ISL_MODE_375LUX ? "375LUX" : "10KLUX", rgb48.red, rgb48.green, rgb48.blue);
 
 /*
     // power on GSM module

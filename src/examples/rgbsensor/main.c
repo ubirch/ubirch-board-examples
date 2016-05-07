@@ -30,7 +30,7 @@
 #include <board.h>
 #include <timer.h>
 
-#define ISL_327LUX_MAX 65000
+#define ISL_375LUX_MAX 65000
 #define ISL_10KLUX_MIN 8000
 
 static const i2c_config_t i2c_config = {
@@ -100,7 +100,7 @@ int main(void) {
 
     // auto-compensate for brightness
     if (sensitivity == ISL_MODE_375LUX &&
-        rgb48.red > ISL_327LUX_MAX && rgb48.green > ISL_327LUX_MAX && rgb48.blue > ISL_327LUX_MAX) {
+        rgb48.red > ISL_375LUX_MAX && rgb48.green > ISL_375LUX_MAX && rgb48.blue > ISL_375LUX_MAX) {
       sensitivity = ISL_MODE_10KLUX;
       sample_rgb(&rgb48, sensitivity);
     } else if (sensitivity == ISL_MODE_10KLUX &&
