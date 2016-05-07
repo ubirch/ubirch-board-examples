@@ -97,7 +97,7 @@ void sim800h_init() {
 }
 
 void sim800h_enable() {
-#if (BOARD_CELL_PWR_EN_GPIO) && (BOARD_CELL_PWR_EN_PIN)
+#if (defined BOARD_CELL_PWR_EN_GPIO) && (defined BOARD_CELL_PWR_EN_PIN)
   // enable power domain and check that VBAT reading is above 2000
   const gpio_pin_config_t OUTFALSE = {kGPIO_DigitalOutput, false};
   // the clock enable for BOARD_CELL_PWR_EN is done in board.c
@@ -158,7 +158,7 @@ void sim800h_disable() {
   sim800h_send("AT+CPOWD=1");
   sim800h_expect_urc(14, 1000);
 
-#if ((BOARD_CELL_PWR_EN_GPIO) && (BOARD_CELL_PWR_EN_PIN))
+#if ((defined BOARD_CELL_PWR_EN_GPIO) && (defined BOARD_CELL_PWR_EN_PIN))
   GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, false);
 #endif
 }
