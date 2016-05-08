@@ -21,8 +21,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _UBIRCH_TIMER_H
-#define _UBIRCH_TIMER_H
+#ifndef _UBIRCH_TIMER_H_
+#define _UBIRCH_TIMER_H_
 
 #include <stdint.h>
 #include <board.h>
@@ -64,4 +64,4 @@ static inline void delay(uint32_t ms) {
   while (timer_read() < timestamp) { __WFI(); }
 }
 
-#endif // _UBIRCH_TIMER_H
+#endif // _UBIRCH_TIMER_H_

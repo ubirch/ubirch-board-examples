@@ -22,8 +22,8 @@
  * limitations under the License.
  */
 
-#ifndef _UBIRCH_RTC_H
-#define _UBIRCH_RTC_H
+#ifndef _UBIRCH_RTC_H_
+#define _UBIRCH_RTC_H_
 
 #include <fsl_rtc.h>
 
@@ -56,4 +56,4 @@ void rtc_attach(rtc_datetime_handler_t handler);
 /*! @brief Detach alarm handler. */
 static inline void rtc_detach() { rtc_attach(NULL); }
 
-#endif // _UBIRCH_RTC_H
+#endif // _UBIRCH_RTC_H_

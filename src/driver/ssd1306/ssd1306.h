@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-#ifndef UBIRCH_SSD1306_H
-#define UBIRCH_SSD1306_H
+#ifndef _UBIRCH_SSD1306_H_
+#define _UBIRCH_SSD1306_H_
 
 // the default controller device address
 #define OLED_DEVICE_ADDRESS     0x3d
@@ -106,4 +106,4 @@ void ssd1306_data(uint8_t address, uint8_t *data, size_t size);
  */
 void ssd1306_clear(uint8_t address);
 
-#endif //UBIRCH_SSD1306_H
+#endif // _UBIRCH_SSD1306_H_

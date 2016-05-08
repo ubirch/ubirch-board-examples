@@ -33,10 +33,32 @@
  */
 bool sim800h_register(uint32_t timeout);
 
+/*!
+ * @brief Attach to the GPRS network.
+ * @param apn the network APN
+ * @param user the apn user name
+ * @param password the apn password
+ * @param timeout how long to wait in ms
+ */
 bool sim800h_gprs_attach(const char *apn, const char *user, const char *password, uint32_t timeout);
 
+/*!
+ * @brief If connected, get status, current battery level, and voltage.
+ * @param status status (0 not charging, 1 charging, 2 charged)
+ * @param level where the level is stored (1-100)
+ * @param voltage where voltage is stored (in mV)
+ * @param timeout how long to wait in ms
+ */
 bool sim800h_battery(short int *status, short int *level, int *voltage, uint32_t timeout);
 
+/*!
+ * @brief Get GSM location information, as well as date and time.
+ * @param status request status (0 ok)
+ * @param lat latitude
+ * @param lon longitude
+ * @param datetime date and time from the GSM network
+ * @param timeout how long to wait in ms
+ */
 bool sim800h_location(short int *status, double *lat, double *lon, rtc_datetime_t *datetime, uint32_t timeout);
 
 #endif // _UBIRCH_SIM800H_OPS_H_

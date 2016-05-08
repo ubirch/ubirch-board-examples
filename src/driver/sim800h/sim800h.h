@@ -25,8 +25,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef UBIRCH_SIM800_H
-#define UBIRCH_SIM800_H
+#ifndef _UBIRCH_SIM800_H_
+#define _UBIRCH_SIM800_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -58,4 +58,4 @@ size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout);
 /*! Write a line to the SIM800H and terminate it using CR LF */
 void sim800h_writeline(const char *buffer);
 
-#endif
+#endif // _UBIRCH_SIM800_H_

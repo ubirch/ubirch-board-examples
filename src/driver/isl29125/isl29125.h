@@ -28,8 +28,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef UBIRCH_ISL29125_H
-#define UBIRCH_ISL29125_H
+#ifndef _UBIRCH_ISL29125_H_
+#define _UBIRCH_ISL29125_H_
 
 #include <stdint.h>
 
@@ -169,4 +169,4 @@ void isl_read_rgb48(rgb48_t *rgb48);
  */
 void isl_read_rgb24(rgb24_t *rgb24);
 
-#endif //UBIRCH_ISL29125_H
+#endif // _UBIRCH_ISL29125_H_

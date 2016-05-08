@@ -25,8 +25,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _UBIRCH_I2C_CORE_H
-#define _UBIRCH_I2C_CORE_H
+#ifndef _UBIRCH_I2C_CORE_H_
+#define _UBIRCH_I2C_CORE_H_
 
 #include <drivers/fsl_common.h>
 #include <drivers/fsl_port.h>
