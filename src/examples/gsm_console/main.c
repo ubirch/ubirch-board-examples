@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <board.h>
 #include <stdio.h>
-#include <sim800h.h>
+#include <sim800h_core.h>
 #include <sim800h_ops.h>
 #include "config.h"
 

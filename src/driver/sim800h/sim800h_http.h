@@ -1,14 +1,8 @@
 /**
- * @brief ubirch#1 SIM800H cell phone chip driver.
- *
- * This is the SIM800H driver for the cell phone chip on the ubirch#1.
- * As the SIM800H is hard-wired to the LPUART1 all the configuration
- * is wrapped away from the user. This driver provides the functionality
- * to power on/off the chip and has low-level functionality for
- * communicating with the SIM800H using the AT command set.
+ * @brief ubirch#1 SIM800H HTTP operations.
  *
  * @author Matthias L. Jugel
- * @date 2016-04-09
+ * @date 2016-05-08
  *
  * Copyright 2016 ubirch GmbH (https://ubirch.com)
  *
@@ -26,7 +20,7 @@
  * limitations under the License.
  */
 
-#include "sim800h_core.h"
-#include "sim800h_parser.h"
-#include "sim800h_ops.h"
-#include "sim800h_http.h"
+#ifndef _UBIRCH_SIM800H_HTTP_H_
+#define _UBIRCH_SIM800H_HTTP_H_
+
+#endif // _UBIRCH_SIM800H_HTTP_H_

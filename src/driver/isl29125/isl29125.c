@@ -1,5 +1,5 @@
-/**
- * Driver for the RGB sensor ISL29125.
+/*!
+ * @brief Driver for the RGB sensor ISL29125.
  *
  * @author Matthias L. Jugel
  * @date 2016-04-01

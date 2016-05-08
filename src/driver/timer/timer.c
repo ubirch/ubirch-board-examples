@@ -1,5 +1,5 @@
-/**
- * ubirch#1 timer driver code.
+/*!
+ * @brief ubirch#1 timer driver code.
  *
  * Based on https://github.com/mbedmicro/mbed/blob/master/libraries/mbed/targets/hal/TARGET_Freescale/TARGET_KSDK2_MCUS/TARGET_K64F/us_ticker.c
  *

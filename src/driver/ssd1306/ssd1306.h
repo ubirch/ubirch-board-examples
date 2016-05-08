@@ -1,5 +1,5 @@
 /**
- * Functionality for the SSD1306 chip driver for OLED displays.
+ * @brief Functionality for the SSD1306 chip driver for OLED displays.
  *
  * @author Matthias L. Jugel
  *

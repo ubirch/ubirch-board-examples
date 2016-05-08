@@ -1,5 +1,5 @@
-/**
- * ubirch#1 i2c driver code (blocking).
+/*!
+ * @brief ubirch#1 i2c driver code (blocking).
  *
  * @author Matthias L. Jugel
  * @date 2016-04-01

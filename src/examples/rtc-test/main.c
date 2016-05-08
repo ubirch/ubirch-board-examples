@@ -1,6 +1,6 @@
 #include <timer.h>
 #include <rtc.h>
-#include <sim800h.h>
+#include <sim800h_core.h>
 #include <sim800h_ops.h>
 #include "config.h"
 
@@ -27,17 +27,18 @@ int main(void) {
     sim800h_register(30000);
     sim800h_gprs_attach(RTC_TEST_APN, RTC_TEST_USER, RTC_TEST_PWD, 30000);
 
-    short int loc_status;
-    short int bat_status, bat_level;
+    status_t loc_status, bat_status;
+    short int bat_level;
     int bat_voltage;
     double lon, lat;
 
     do {
       sim800h_battery(&bat_status, &bat_level, &bat_voltage, 1000);
       PRINTF("BATTERY: %d%% [%d.%dV] %s\r\n", bat_level, bat_voltage / 1000, bat_voltage % 1000,
-             (bat_status == 0 ? "not charging" : (bat_status == 1 ? "charging" : "charged")));
+             (bat_status == battery_NotCharging ? "not charging" :
+              (bat_status == battery_Charging ? "charging" : "charged")));
       sim800h_location(&loc_status, &lat, &lon, &date, 30000);
-    } while (loc_status);
+    } while (loc_status != loc_Success);
 
     PRINTF("GSM: %04hd-%02hd-%02hd %02hd:%02hd:%02hd\r\n", date.year, date.month, date.day, date.hour,
            date.minute, date.second);

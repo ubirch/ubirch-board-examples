@@ -1,5 +1,5 @@
 /**
- * ubirch#1 SIM800H AT command parser.
+ * @brief ubirch#1 SIM800H AT command parser.
  *
  * @author Matthias L. Jugel
  * @date 2016-04-09
@@ -20,7 +20,7 @@
  * limitations under the License.
  */
 #include <string.h>
-#include "sim800h.h"
+#include "sim800h_core.h"
 #include "sim800h_parser.h"
 
 #ifndef NDEBUG

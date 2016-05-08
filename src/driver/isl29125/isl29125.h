@@ -1,5 +1,6 @@
 /**
- * Driver for the RGB sensor ISL29125.
+ * @brief Driver for the RGB sensor ISL29125.
+ *
  * data sheet: http://www.intersil.com/content/dam/Intersil/documents/isl2/isl29125.pdf
  *
  * The library assumes that the i2c bus has been initialized already.

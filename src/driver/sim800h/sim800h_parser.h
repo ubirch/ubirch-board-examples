@@ -1,5 +1,5 @@
 /**
- * ubirch#1 SIM800H AT command parser.
+ * @brief ubirch#1 SIM800H AT command parser.
  *
  * AT command driver, handling the I/O via the UART and parsing
  * lines for expected responses. Also handles so call unsolicited

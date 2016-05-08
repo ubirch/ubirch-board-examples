@@ -1,11 +1,8 @@
-/**
- * ubirch#1 i2c driver code (blocking).
+/*!
+ * @brief ubirch#1 i2c driver code (blocking).
  *
  * Driver for I2C chipset on the ubirch#1.
  * This code uses the synchronous functions for executing i2c transfers.
- *
- * The I2C pins are A4/A5 (PTB10/PTB11 Alt4) and the bus is referenced
- * in the Kinetis SDK as I2C2.
  *
  * @author Matthias L. Jugel
  * @date 2016-04-01

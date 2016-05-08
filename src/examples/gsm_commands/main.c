@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <board.h>
-#include <sim800h.h>
+#include <sim800h_core.h>
 #include <sim800h_parser.h>
 #include <timer.h>
 

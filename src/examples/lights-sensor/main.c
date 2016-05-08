@@ -30,7 +30,7 @@
 #include <utilities/fsl_debug_console.h>
 #include <board.h>
 #include <timer.h>
-#include <sim800h.h>
+#include <sim800h_core.h>
 #include <sim800h_parser.h>
 #include <sim800h_ops.h>
 #include "config.h"

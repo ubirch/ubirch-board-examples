@@ -1,5 +1,5 @@
 /**
- * ubirch#1 SIM800H cell phone chip driver.
+ * ubirch#1 SIM800H cell core functionality.
  *
  * @author Matthias L. Jugel
  * @date 2016-04-09
@@ -20,7 +20,7 @@
  * limitations under the License.
  */
 
-#include "sim800h.h"
+#include "sim800h_core.h"
 #include "sim800h_parser.h"
 #include <drivers/fsl_lpuart.h>
 #include <timer.h>

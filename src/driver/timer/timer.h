@@ -1,5 +1,5 @@
-/**
- * ubirch#1 timer driver code.
+/*!
+ * @brief ubirch#1 timer driver code.
  *
  * Driver for timer related tasks.
  *
