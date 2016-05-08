@@ -69,7 +69,7 @@ static inline void timer_schedule_in(uint32_t us) {
 static inline void delay(uint32_t ms) {
   uint32_t timestamp = timer_read() + ms * 1000;
   timer_schedule(timestamp);
-  while (timer_read() < timestamp) { __WFI(); }
+  while (timer_read() < timestamp) { __WFE(); }
 }
 
 #endif // _UBIRCH_TIMER_H_

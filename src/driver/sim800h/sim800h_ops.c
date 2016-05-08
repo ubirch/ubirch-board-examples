@@ -111,7 +111,8 @@ bool sim800h_gprs_attach(const char *apn, const char *user, const char *password
   int opened;
   do {
     sim800h_send("AT+SAPBR=2,1");
-    if (!sim800h_expect_scan("+SAPBR: 1,%d", REMAINING(us_target), &opened)) return false;
+    sim800h_expect_scan("+SAPBR: 1,%d", REMAINING(us_target), &opened);
+    if(!sim800h_expect("OK", REMAINING(us_target))) return false;
     delay(1000);
   } while (opened != 1 && (timer_read() < us_target));
 

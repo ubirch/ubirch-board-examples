@@ -48,13 +48,13 @@ void BOARD_CELL_UART_IRQ_HANDLER(void) {
     // it may be necessary to create a critical section here, but
     // right now it didn't hurt us to not disable interrupts
 
-     __disable_irq();
+    // __disable_irq();
     /* If ring buffer is not full, add data to ring buffer. */
     if (((gsmRxIndex + 1) % GSM_RINGBUFFER_SIZE) != gsmRxHead) {
       gsmUartRingBuffer[gsmRxIndex++] = data;
       gsmRxIndex %= GSM_RINGBUFFER_SIZE;
     }
-     __enable_irq();
+    // __enable_irq();
   }
 }
 
@@ -72,6 +72,7 @@ void sim800h_init() {
 
   PORT_SetPinMux(BOARD_CELL_PORT, BOARD_CELL_RESET_PIN, kPORT_MuxAsGpio);
   GPIO_PinInit(BOARD_CELL_GPIO, BOARD_CELL_RESET_PIN, &OUTTRUE);
+  GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_RESET_PIN, false);
 
   PORT_SetPinMux(BOARD_CELL_PORT, BOARD_CELL_PWRKEY_PIN, kPORT_MuxAsGpio);
   GPIO_PinInit(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, &OUTTRUE);

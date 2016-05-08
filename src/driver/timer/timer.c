@@ -31,6 +31,7 @@ static bool initialized = false;
 void PIT3_IRQHandler() {
   PIT_ClearStatusFlags(PIT, kPIT_Chnl_3, kPIT_TimerFlag);
   PIT_DisableInterrupts(PIT, kPIT_Chnl_3, kPIT_TimerInterruptEnable);
+  __SEV();
 }
 
 void timer_init() {
