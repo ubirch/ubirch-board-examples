@@ -84,4 +84,11 @@ bool sim800h_battery(status_t *status, short int *level, int *voltage, uint32_t 
  */
 bool sim800h_location(status_t *status, double *lat, double *lon, rtc_datetime_t *datetime, uint32_t timeout);
 
+/*!
+ * @brief Get the IMEI number.
+ * @param imei the IMEI
+ * @param timeout how long to wait in ms
+ */
+bool sim800h_imei(char *imei, const uint32_t timeout);
+
 #endif // _UBIRCH_SIM800H_OPS_H_

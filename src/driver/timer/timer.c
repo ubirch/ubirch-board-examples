@@ -74,3 +74,7 @@ void timer_schedule(uint32_t timestamp) {
   PIT_StartTimer(PIT, kPIT_Chnl_3);
   PIT_StartTimer(PIT, kPIT_Chnl_2);
 }
+
+extern void timer_schedule_in(uint32_t us);
+
+extern void delay(uint32_t ms);

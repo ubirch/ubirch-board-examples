@@ -42,15 +42,23 @@ void timer_init(void);
 uint32_t timer_read(void);
 
 /*!
- * @brief Schedule a timer interrupt in the future.
+ * @brief Schedule a timer interrupt in the future (absolute).
  * @param a timestamp (timer_read() + delta interval)
  */
 void timer_schedule(uint32_t timestamp);
 
 /*!
+ * @brief Schedule a timer interrupt in the future (relative).
+ * @param a relative time interval in us
+ */
+static inline void timer_schedule_in(uint32_t us) {
+  timer_schedule(timer_read() + us);
+}
+
+/*!
  * @brief Delay execution for a certain amount of time.
  *
- * This function will try to go into a low power mode (__WFI())until the
+ * This function will try to go into a low power mode (__WFI()) until the
  * end of the delay. It will schedule an interrupt in the future
  * and under optimal conditions only wake up when the interrupt
  * is triggered. If other events preempt this it checks the

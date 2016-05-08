@@ -30,9 +30,8 @@
 #include <utilities/fsl_debug_console.h>
 #include <board.h>
 #include <timer.h>
-#include <sim800h_core.h>
-#include <sim800h_parser.h>
-#include <sim800h_ops.h>
+#include <sim800h.h>
+#include <rtc.h>
 #include "config.h"
 
 #define TIMEOUT 5000
@@ -75,6 +74,7 @@ static const i2c_config_t i2c_config = {
 // this counts up as long as we don't have a reset
 //static uint16_t loop_counter = 1;
 static uint8_t error_flag = 0x00;
+static int loop_counter = 0;
 
 // internal sensor state
 //static uint16_t interval = DEFAULT_INTERVAL;
@@ -133,35 +133,65 @@ int main(void) {
 
   i2c_init(i2c_config);
   sim800h_init();
+  rtc_init();
+
+  rgb48_t rgb;
+  status_t status;
+  double lat, lon;
+  rtc_datetime_t date;
+  short int level;
+  int voltage;
 
   while (true) {
-    rgb48_t rgb48;
-    sample_rgb(&rgb48, sensitivity);
-    PRINTF("-RGB(%s, %lu,%lu,%lu)\r\n", sensitivity == ISL_MODE_375LUX ? "375LUX" : "10KLUX", rgb48.red, rgb48.green, rgb48.blue);
+    sample_rgb(&rgb, sensitivity);
+    PRINTF("-RGB(%s, %lu,%lu,%lu)\r\n", sensitivity == ISL_MODE_375LUX ? "375LUX" : "10KLUX", rgb.red, rgb.green,
+           rgb.blue);
 
     // auto-compensate for brightness
     if (sensitivity == ISL_MODE_375LUX &&
-        rgb48.red > ISL_375LUX_MAX && rgb48.green > ISL_375LUX_MAX && rgb48.blue > ISL_375LUX_MAX) {
+        rgb.red > ISL_375LUX_MAX && rgb.green > ISL_375LUX_MAX && rgb.blue > ISL_375LUX_MAX) {
       sensitivity = ISL_MODE_10KLUX;
-      sample_rgb(&rgb48, sensitivity);
+      sample_rgb(&rgb, sensitivity);
     } else if (sensitivity == ISL_MODE_10KLUX &&
-               rgb48.red < ISL_10KLUX_MIN && rgb48.green < ISL_10KLUX_MIN && rgb48.blue < ISL_10KLUX_MIN) {
+               rgb.red < ISL_10KLUX_MIN && rgb.green < ISL_10KLUX_MIN && rgb.blue < ISL_10KLUX_MIN) {
       sensitivity = ISL_MODE_375LUX;
-      sample_rgb(&rgb48, sensitivity);
+      sample_rgb(&rgb, sensitivity);
     }
-    PRINTF("+RGB(%s, %lu,%lu,%lu)\r\n", sensitivity == ISL_MODE_375LUX ? "375LUX" : "10KLUX", rgb48.red, rgb48.green, rgb48.blue);
+    PRINTF("+RGB(%s, %lu,%lu,%lu)\r\n", sensitivity == ISL_MODE_375LUX ? "375LUX" : "10KLUX", rgb.red, rgb.green,
+           rgb.blue);
 
     // power on GSM module
 
     sim800h_enable();
     sim800h_register(TIMEOUT);
+    sim800h_gprs_attach(CELL_APN, CELL_USER, CELL_PWD, 6 * TIMEOUT);
+    sim800h_battery(&status, &level, &voltage, TIMEOUT);
+    if(sim800h_location(&status, &lat, &lon, &date, TIMEOUT)) {
+      rtc_set(&date);
+    }
 
-    sim800h_gprs_attach(CELL_APN, CELL_USER, CELL_PWD, 30000);
+    char payload[128];
+    sim800h_imei(payload, TIMEOUT);
+    // hashed payload structure IMEI{DATA}
+    // Example: '123456789012345{"r":44,"g":33,"b":22,"s":0,"lat":"12.475886","lon":"51.505264","bat":100,"lps":99999}'
+    sprintf(payload + 15,
+            "{\"r\":%u,\"g\":%u,\"b\":%u,\"s\":%1u,\"la\":\"%f\",\"lo\":\"%f\",\"ba\":%3u,\"lp\":%u,\"e\":%u}",
+            rgb.red, rgb.green, rgb.blue, sensitivity == ISL_MODE_375LUX ? 0 : 1,
+            lat, lon, level, loop_counter, error_flag);
 
+    PRINTF("PAYLOAD: '%s'\r\n", payload);
 
     // switch off GSM module
     sim800h_disable();
 
-    delay(5000);
+    PRINTF("%04hd-%02hd-%02hd %02hd:%02hd:%02hd DONE.\r\n",
+           date.year, date.month, date.day, date.hour, date.minute, date.second);
+
+    delay(60000);
+
+    rtc_get(&date);
+    PRINTF("%04hd-%02hd-%02hd %02hd:%02hd:%02hd WAKEUP.\r\n",
+           date.year, date.month, date.day, date.hour, date.minute, date.second);
+    loop_counter++;
   }
 }

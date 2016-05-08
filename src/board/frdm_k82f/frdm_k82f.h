@@ -91,6 +91,7 @@
 
 #define BOARD_RTC               RTC
 #define BOARD_RTC_CLOCK         RTC_CR_OSCE_MASK
+#define BOARD_RTC_IRQ           RTC_IRQn
 
 // (debug) console                             `
 //! LPUART0 (RX - PTB16, TX - PTB17)
