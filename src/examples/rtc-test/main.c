@@ -4,12 +4,12 @@
 #include <sim800h_ops.h>
 #include "config.h"
 
-#define CELL_ENABLED 1
+#define CELL_ENABLED 0
 
 bool alarm_triggered = false;
 
 void alarm(rtc_datetime_t *date) {
-  PRINTF("ALARM! %04hd-%02hd-%02hd %02hd:%02hd:%02hd\r\n",
+  PRINTF("ALARM ! %04hd-%02hd-%02hd %02hd:%02hd:%02hd\r\n",
          date->year, date->month, date->day, date->hour, date->minute, date->second);
   alarm_triggered = true;
 }
@@ -57,7 +57,7 @@ int main(void) {
     rtc_get(&date);
 
     /* print default time */
-    PRINTF("Current datetime: %04hd-%02hd-%02hd %02hd:%02hd:%02hd\r\n", date.year, date.month, date.day, date.hour,
+    PRINTF("        %04hd-%02hd-%02hd %02hd:%02hd:%02hd\r\n", date.year, date.month, date.day, date.hour,
            date.minute, date.second);
 
     /* Get alarm time from user */
@@ -67,6 +67,12 @@ int main(void) {
     while (sec < 1) {
       SCANF("%d", &sec);
     }
+
+    rtc_get(&date);
+
+    /* print default time */
+    PRINTF("        %04hd-%02hd-%02hd %02hd:%02hd:%02hd\r\n", date.year, date.month, date.day, date.hour,
+           date.minute, date.second);
 
     // set alarm in n seconds
     rtc_set_alarm_in(sec);
