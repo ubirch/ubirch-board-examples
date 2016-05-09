@@ -44,15 +44,17 @@ uint32_t timer_read(void);
 /*!
  * @brief Schedule a timer interrupt in the future (absolute).
  * @param a timestamp (timer_read() + delta interval)
+ * @return the target timestamp
  */
-void timer_schedule(uint32_t timestamp);
+uint32_t timer_schedule(uint32_t timestamp);
 
 /*!
  * @brief Schedule a timer interrupt in the future (relative).
  * @param a relative time interval in us
+ * @return the target timestamp (current + us)
  */
-static inline void timer_schedule_in(uint32_t us) {
-  timer_schedule(timer_read() + us);
+static inline uint32_t timer_schedule_in(uint32_t us) {
+  return timer_schedule(timer_read() + us);
 }
 
 /*!
@@ -67,8 +69,7 @@ static inline void timer_schedule_in(uint32_t us) {
  * @param ms the milliseconds to delay execution
  */
 static inline void delay(uint32_t ms) {
-  uint32_t timestamp = timer_read() + ms * 1000;
-  timer_schedule(timestamp);
+  uint32_t timestamp = timer_schedule_in(ms * 1000);
   while (timer_read() < timestamp) { __WFE(); }
 }
 

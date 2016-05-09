@@ -12,6 +12,8 @@ message(STATUS "selected board: ${BOARD}")
 
 project(ubirch-board C CXX ASM)
 
+#add_definitions(-DNCIODEBUG)
+
 # include special libs
 include(cmake/Libraries/mmcau.cmake)
 include(cmake/Libraries/wolfssl.cmake)

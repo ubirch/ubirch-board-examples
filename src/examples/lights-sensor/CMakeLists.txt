@@ -1,6 +1,6 @@
 # ADD_EXECUTABLE
 add_executable(lights-sensor main.c)
-target_link_libraries(lights-sensor board timer isl29125 sim800h rtc)
+target_link_libraries(lights-sensor board timer isl29125 sim800h rtc wolfcrypt)
 prepare_flash(lights-sensor)
 
 # copy the config.h.template to config.h in case it is not there; it is ignored by .git!

@@ -20,22 +20,19 @@
  * limitations under the License.
  */
 
-#include "sim800h_core.h"
-#include "sim800h_parser.h"
 #include <drivers/fsl_lpuart.h>
 #include <timer.h>
-#include <fsl_adc16.h>
+#include "sim800h_core.h"
+#include "sim800h_parser.h"
+#include "sim800h_debug.h"
 
 #ifndef BOARD_CELL_PORT
 #  error "No PORT found for cell phone chip. please configure ports/pins/clocks!"
 #endif
 
-#ifdef NDEBUG
-# undef PRINTF
-# define PRINTF(...)
+#ifndef GSM_RINGBUFFER_SIZE
+#  define GSM_RINGBUFFER_SIZE 32
 #endif
-
-#define GSM_RINGBUFFER_SIZE 32
 static uint8_t gsmUartRingBuffer[GSM_RINGBUFFER_SIZE];
 static volatile int gsmRxIndex, gsmRxHead;
 
@@ -106,38 +103,38 @@ void sim800h_init() {
   EnableIRQ(BOARD_CELL_UART_IRQ);
 }
 
-#define VBAT_SENSE_PORT PORTD
-#define VBAT_SENSE_GPIO GPIOD
-#define VBAT_SENSE_PIN 6
-#define VBAT_SENSE_ALT kPORT_PinDisabledOrAnalog
-#define VBAT_SENSE_ADC ADC0
-#define VBAT_SENSE_ADC_GROUP 0
-#define VBAT_SENSE_CHANNEL 7
-#define VBAT_SENSE_CHANNEL_MUX kADC16_ChannelMuxB
-
-uint16_t VBat_Read() {
-  ADC16_SetChannelMuxMode(VBAT_SENSE_ADC, VBAT_SENSE_CHANNEL_MUX);
-  adc16_channel_config_t adc16ChannelConfigStruct;
-  adc16ChannelConfigStruct.channelNumber = VBAT_SENSE_CHANNEL;
-  adc16ChannelConfigStruct.enableInterruptOnConversionCompleted = false;
-  adc16ChannelConfigStruct.enableDifferentialConversion = false;
-  ADC16_SetChannelConfig(VBAT_SENSE_ADC, VBAT_SENSE_ADC_GROUP, &adc16ChannelConfigStruct);
-  while (true) {
-    uint32_t status = ADC16_GetChannelStatusFlags(VBAT_SENSE_ADC, VBAT_SENSE_ADC_GROUP);
-    if (status & kADC16_ChannelConversionDoneFlag) {
-      break;
-    }
-  }
-  uint16_t val = (uint16_t) ADC16_GetChannelConversionValue(VBAT_SENSE_ADC, VBAT_SENSE_ADC_GROUP);
-  return val;
-}
+//#define VBAT_SENSE_PORT PORTD
+//#define VBAT_SENSE_GPIO GPIOD
+//#define VBAT_SENSE_PIN 6
+//#define VBAT_SENSE_ALT kPORT_PinDisabledOrAnalog
+//#define VBAT_SENSE_ADC ADC0
+//#define VBAT_SENSE_ADC_GROUP 0
+//#define VBAT_SENSE_CHANNEL 7
+//#define VBAT_SENSE_CHANNEL_MUX kADC16_ChannelMuxB
+//
+//uint16_t VBat_Read() {
+//  ADC16_SetChannelMuxMode(VBAT_SENSE_ADC, VBAT_SENSE_CHANNEL_MUX);
+//  adc16_channel_config_t adc16ChannelConfigStruct;
+//  adc16ChannelConfigStruct.channelNumber = VBAT_SENSE_CHANNEL;
+//  adc16ChannelConfigStruct.enableInterruptOnConversionCompleted = false;
+//  adc16ChannelConfigStruct.enableDifferentialConversion = false;
+//  ADC16_SetChannelConfig(VBAT_SENSE_ADC, VBAT_SENSE_ADC_GROUP, &adc16ChannelConfigStruct);
+//  while (true) {
+//    uint32_t status = ADC16_GetChannelStatusFlags(VBAT_SENSE_ADC, VBAT_SENSE_ADC_GROUP);
+//    if (status & kADC16_ChannelConversionDoneFlag) {
+//      break;
+//    }
+//  }
+//  uint16_t val = (uint16_t) ADC16_GetChannelConversionValue(VBAT_SENSE_ADC, VBAT_SENSE_ADC_GROUP);
+//  return val;
+//}
 
 void sim800h_enable() {
   char response[10];
   size_t len;
 
 #if BOARD_CELL_PWR_DOMAIN
-  PRINTF("GSM #### -- power on\r\n");
+  CSTDEBUG("GSM #### -- power on\r\n");
   GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, true);
   // TODO check that power has come up correctly
 #endif
@@ -151,18 +148,18 @@ void sim800h_enable() {
   // sometimes there is initial noise on the serial line
   sim800h_send("AT");
   len = sim800h_readline(response, 9, 500);
-  if (len) PRINTF("GSM (%02d) -> '%s'\r\n", len, response);
+  CIODEBUG("GSM (%02d) -> '%s'\r\n", len, response);
   sim800h_readline(response, 9, 500);
-  if (len) PRINTF("GSM (%02d) -> '%s'\r\n", len, response);
+  CIODEBUG("GSM (%02d) -> '%s'\r\n", len, response);
 
   // now identify if the chip is actually on, by issue AT and expecting something
   // if we can't read a response, either AT or OK, we need to run the power on sequence
   sim800h_send("AT");
   len = sim800h_readline(response, 9, 1000);
-  if (len) PRINTF("GSM (%02d) -> '%s'\r\n", len, response);
+  CIODEBUG("GSM (%02d) -> '%s'\r\n", len, response);
 
   if (!len) {
-    PRINTF("GSM #### !! trigger PWRKEY\r\n");
+    CSTDEBUG("GSM #### !! trigger PWRKEY\r\n");
     // power on the SIM800H
     GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, true);
     delay(10); //10ms
@@ -170,7 +167,7 @@ void sim800h_enable() {
     delay(1100); // 1.1s
     GPIO_WritePinOutput(BOARD_CELL_GPIO, BOARD_CELL_PWRKEY_PIN, true);
   } else {
-    PRINTF("GSM #### !! already on\r\n");
+    CSTDEBUG("GSM #### !! already on\r\n");
   }
 
   // wait for the chip to boot and react to commands
@@ -188,7 +185,7 @@ void sim800h_disable() {
   sim800h_expect_urc(14, 7000);
 
 #if ((defined BOARD_CELL_PWR_EN_GPIO) && (defined BOARD_CELL_PWR_EN_PIN))
-  PRINTF("GSM #### -- power off\r\n");
+  CSTDEBUG("GSM #### -- power off\r\n");
   GPIO_WritePinOutput(BOARD_CELL_PWR_EN_GPIO, BOARD_CELL_PWR_EN_PIN, false);
 #endif
 }

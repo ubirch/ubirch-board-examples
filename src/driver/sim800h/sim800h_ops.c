@@ -21,38 +21,25 @@
  */
 
 #include <timer.h>
-#include <stdbool.h>
-#include <fsl_debug_console.h>
 #include <fsl_rtc.h>
 #include <stdlib.h>
 #include "sim800h_parser.h"
 #include "sim800h_core.h"
-
-#ifndef NDEBUG
-static const char *reg_status[6] = {
-  "NOT SEARCHING",
-  "HOME",
-  "SEARCHING",
-  "DENIED",
-  "UNKNOWN",
-  "ROAMING"
-};
-#endif
+#include "sim800h_debug.h"
 
 #define REMAINING(t) (((t) - timer_read())/1000)
 
 bool sim800h_register(const uint32_t timeout) {
-  uint32_t us_target = timer_read() + timeout * 1000;
-  timer_schedule(us_target);
+  uint32_t us_target = timer_schedule_in(timeout * 1000);
 
   bool registered = false;
   while (!registered && (timer_read() < us_target)) {
-    int x, status;
+    int bearer = 0, status = 0;
     sim800h_send("AT+CREG?");
-    const int matched = sim800h_expect_scan("+CREG: %d,%d", REMAINING(us_target), &x, &status);
+    const int matched = sim800h_expect_scan("+CREG: %d,%d", REMAINING(us_target), &bearer, &status);
     sim800h_expect("OK", 500);
     if (matched == 2) {
-      PRINTF("GSM INFO !! [%02d] %s\r\n", status, status < 6 ? reg_status[status] : "???");
+      CSTDEBUG("GSM INFO !! [%02d] %s\r\n", status, status < 6 ? reg_status[status] : "???");
       registered = ((status == CREG_HOME || status == CREG_ROAMING));
     }
     if (!registered) delay(2000);
@@ -62,8 +49,7 @@ bool sim800h_register(const uint32_t timeout) {
 }
 
 bool sim800h_gprs_attach(const char *apn, const char *user, const char *password, const uint32_t timeout) {
-  uint32_t us_target = timer_read() + timeout * 1000;
-  timer_schedule(us_target);
+  uint32_t us_target = timer_schedule_in(timeout * 1000);
 
   // shut down any previous GPRS connection
   sim800h_send("AT+CIPSHUT");
@@ -120,8 +106,7 @@ bool sim800h_gprs_attach(const char *apn, const char *user, const char *password
 }
 
 bool sim800h_gprs_detach(uint32_t timeout) {
-  uint32_t us_target = timer_read() + timeout * 1000;
-  timer_schedule(us_target);
+  uint32_t us_target = timer_schedule_in(timeout * 1000);
 
   sim800h_send("AT+CIPSHUT");
   if (!sim800h_expect("SHUT OK", REMAINING(us_target))) return false;
@@ -146,22 +131,24 @@ bool sim800h_location(status_t *status, double *lat, double *lon, rtc_datetime_t
   sim800h_send("AT+CIPGSMLOC=1,1");
   sim800h_expect_scan("+CIPGSMLOC: %d,%s", timeout, &status, response);
 
-  *lon = atof(strtok(response, ","));
-  *lat = atof(strtok(NULL, ","));
+  if(status == 0) {
+    *lon = atof(strtok(response, ","));
+    *lat = atof(strtok(NULL, ","));
 
-  datetime->year = (uint16_t) atoi(strtok(NULL, "/"));
-  datetime->month  = (uint8_t) atoi(strtok(NULL, "/"));
-  datetime->day = (uint8_t) atoi(strtok(NULL, ","));
-  datetime->hour  = (uint8_t) atoi(strtok(NULL, ":"));
-  datetime->minute = (uint8_t) atoi(strtok(NULL, ":"));
-  datetime->second = (uint8_t) atoi(strtok(NULL, ":"));
+    datetime->year = (uint16_t) atoi(strtok(NULL, "/"));
+    datetime->month = (uint8_t) atoi(strtok(NULL, "/"));
+    datetime->day = (uint8_t) atoi(strtok(NULL, ","));
+    datetime->hour = (uint8_t) atoi(strtok(NULL, ":"));
+    datetime->minute = (uint8_t) atoi(strtok(NULL, ":"));
+    datetime->second = (uint8_t) atoi(strtok(NULL, ":"));
+  }
 
-  return sim800h_expect("OK", 500);
+  return sim800h_expect("OK", 500) && status == 0;
 }
 
 bool sim800h_imei(char *imei, const uint32_t timeout) {
   sim800h_send("AT+GSN");
-  size_t len = sim800h_readline(imei, 16, timeout);
-  PRINTF("GSM (%02d) -> '%s'\r\n", len, imei);
+  sim800h_readline(imei, 16, timeout);
+  CIODEBUG("GSM (%02d) -> '%s'\r\n", strnlen(imei, 15), imei);
   return sim800h_expect("OK", 500);
 }
