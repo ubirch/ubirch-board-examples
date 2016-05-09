@@ -149,7 +149,7 @@ void sim800h_enable() {
   sim800h_send("AT");
   len = sim800h_readline(response, 9, 500);
   CIODEBUG("GSM (%02d) -> '%s'\r\n", len, response);
-  sim800h_readline(response, 9, 500);
+  len = sim800h_readline(response, 9, 500);
   CIODEBUG("GSM (%02d) -> '%s'\r\n", len, response);
 
   // now identify if the chip is actually on, by issue AT and expecting something
