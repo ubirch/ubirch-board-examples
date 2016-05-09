@@ -34,16 +34,16 @@ int main(void) {
   // check for OK - if echo is off we just get a failed ATE0
   sim800h_send("ATE0");
   if (sim800h_expect("ATE0", TIMEOUT))
-    sim800h_expect("OK", TIMEOUT);
+    sim800h_expect_OK(TIMEOUT);
 
   PRINTF("----- ECHO OFF\r\n");
 
   sim800h_send("ATV1");
-  sim800h_expect("OK", TIMEOUT);
+  sim800h_expect_OK(TIMEOUT);
 
   sim800h_send("ATI");
   sim800h_expect("SIM", TIMEOUT);
-  sim800h_expect("OK", TIMEOUT);
+  sim800h_expect_OK(TIMEOUT);
 
   PRINTF("----- SIM INFO RECEIVED\r\n");
 
@@ -54,7 +54,7 @@ int main(void) {
     // this looks strange because we need to ensure both gsm_expect() calls are made,
     // so expect-1 && expect-2 does not work because of expression evaluation
     registered = sim800h_expect("+CREG: 0,5", TIMEOUT);
-    registered = sim800h_expect("OK", TIMEOUT) && registered;
+    registered = sim800h_expect_OK(TIMEOUT) && registered;
   } while (!registered);
 
   PRINTF("----- GSM REGISTERED WITH NETWORK\r\n");
@@ -63,15 +63,15 @@ int main(void) {
   sim800h_expect("SHUT OK", TIMEOUT);
 
   sim800h_send("AT+CIPMUX=1");
-  sim800h_expect("OK", TIMEOUT);
+  sim800h_expect_OK(TIMEOUT);
 
   sim800h_send("AT+CIPRXGET=1");
-  sim800h_expect("OK", TIMEOUT);
+  sim800h_expect_OK(TIMEOUT);
 
   do {
     delay(2000);
     sim800h_send("AT+CGATT=1");
-  } while (!sim800h_expect("OK", TIMEOUT));
+  } while (!sim800h_expect_OK(TIMEOUT));
 
   PRINTF("----- INIT DONE\r\n");
 

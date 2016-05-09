@@ -32,6 +32,8 @@
 #include <timer.h>
 #include <sim800h.h>
 #include <rtc.h>
+#include <wolfssl/wolfcrypt/sha512.h>
+#include <wolfssl/wolfcrypt/coding.h>
 #include "config.h"
 
 #define TIMEOUT 5000
@@ -180,6 +182,31 @@ int main(void) {
             lat, lon, level, loop_counter, error_flag);
 
     PRINTF("PAYLOAD: '%s'\r\n", payload);
+
+    Sha512 sha512;
+    byte signature[64];
+
+    wc_InitSha512(&sha512);
+    wc_Sha512Update(&sha512, (const byte *) payload, strnlen(payload, 128));
+    wc_Sha512Final(&sha512, signature);
+
+    PRINTF("SIGNATURE: ");
+    for(int i = 0; i < 64; i++) PRINTF("%02x", signature[i]);
+    PRINTF("\r\n");
+
+    word32 base64len;
+    Base64_EncodeEsc(signature, 64, NULL, &base64len);
+
+    byte payload_hash[base64len];
+    Base64_EncodeEsc(signature, 64, payload_hash, &base64len);
+
+    PRINTF("SIGNATURE (BASE64): %s\r\n", payload_hash);
+
+//    char message[300];
+//    sprintf(message,
+//              "{\"v\":\"0.0.1\",\"a\":\"%s\",\"s\":\"%s\",\"p\":%s}",
+//              auth_hash, payload_hash, payload + 15);
+
 
     // switch off GSM module
     sim800h_disable();

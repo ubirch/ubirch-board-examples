@@ -37,7 +37,7 @@ bool sim800h_register(const uint32_t timeout) {
     int bearer = 0, status = 0;
     sim800h_send("AT+CREG?");
     const int matched = sim800h_expect_scan("+CREG: %d,%d", REMAINING(us_target), &bearer, &status);
-    sim800h_expect("OK", 500);
+    sim800h_expect_OK(500);
     if (matched == 2) {
       CSTDEBUG("GSM INFO !! [%02d] %s\r\n", status, status < 6 ? reg_status[status] : "???");
       registered = ((status == CREG_HOME || status == CREG_ROAMING));
@@ -57,48 +57,48 @@ bool sim800h_gprs_attach(const char *apn, const char *user, const char *password
 
   // enable multiplex mode (TODO check it necessary, I read somewhere multiplex mode is more stable)
   sim800h_send("AT+CIPMUX=1");
-  if (!sim800h_expect("OK", REMAINING(us_target))) return false;
+  if (!sim800h_expect_OK(REMAINING(us_target))) return false;
 
   // enable manual receive mode
   sim800h_send("AT+CIPRXGET=1");
-  if (!sim800h_expect("OK", REMAINING(us_target))) return false;
+  if (!sim800h_expect_OK(REMAINING(us_target))) return false;
 
   // attach to the network
   bool attached = false;
   do {
     sim800h_send("AT+CGATT=1");
-    attached = sim800h_expect("OK", REMAINING(us_target));
+    attached = sim800h_expect_OK(REMAINING(us_target));
     if (!attached) delay(1000);
   } while (!attached && (timer_read() < us_target));
   if (!attached) return false;
 
   // configure connection
   sim800h_send("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"");
-  if (!sim800h_expect("OK", REMAINING(us_target))) return false;
+  if (!sim800h_expect_OK(REMAINING(us_target))) return false;
 
   // set bearer profile access point name
   if (apn) {
     sim800h_send("AT+SAPBR=3,1,\"APN\",\"%s\"", apn);
-    if (!sim800h_expect("OK", REMAINING(us_target))) return false;
+    if (!sim800h_expect_OK(REMAINING(us_target))) return false;
     if (user) {
       sim800h_send("AT+SAPBR=3,1,\"USER\",\"%s\"", user);
-      if (!sim800h_expect("OK", REMAINING(us_target))) return false;
+      if (!sim800h_expect_OK(REMAINING(us_target))) return false;
     }
     if (password) {
       sim800h_send("AT+SAPBR=3,1,\"PWD\",\"%s\"", password);
-      if (!sim800h_expect("OK", REMAINING(us_target))) return false;
+      if (!sim800h_expect_OK(REMAINING(us_target))) return false;
     }
   }
 
   // open GPRS context
   sim800h_send("AT+SAPBR=1,1");
-  sim800h_expect("OK", REMAINING(us_target));
+  sim800h_expect_OK(REMAINING(us_target));
 
   int opened;
   do {
     sim800h_send("AT+SAPBR=2,1");
     sim800h_expect_scan("+SAPBR: 1,%d", REMAINING(us_target), &opened);
-    if(!sim800h_expect("OK", REMAINING(us_target))) return false;
+    if(!sim800h_expect_OK(REMAINING(us_target))) return false;
     delay(1000);
   } while (opened != 1 && (timer_read() < us_target));
 
@@ -112,17 +112,17 @@ bool sim800h_gprs_detach(uint32_t timeout) {
   if (!sim800h_expect("SHUT OK", REMAINING(us_target))) return false;
 
   sim800h_send("AT+SAPBR=0,1");
-  if (!sim800h_expect("OK", REMAINING(us_target))) return false;
+  if (!sim800h_expect_OK(REMAINING(us_target))) return false;
 
   sim800h_send("AT+CGATT=0");
-  return sim800h_expect("OK", REMAINING(us_target));
+  return sim800h_expect_OK(REMAINING(us_target));
 }
 
 
 bool sim800h_battery(status_t *status, short int *level, int *voltage, const uint32_t timeout) {
   sim800h_send("AT+CBC");
   sim800h_expect_scan("+CBC: %d,%d,%d", timeout, status, level, voltage);
-  return sim800h_expect("OK", 500);
+  return sim800h_expect_OK(500);
 }
 
 bool sim800h_location(status_t *status, double *lat, double *lon, rtc_datetime_t *datetime, const uint32_t timeout) {
@@ -143,12 +143,12 @@ bool sim800h_location(status_t *status, double *lat, double *lon, rtc_datetime_t
     datetime->second = (uint8_t) atoi(strtok(NULL, ":"));
   }
 
-  return sim800h_expect("OK", 500) && status == 0;
+  return sim800h_expect_OK(500) && status == 0;
 }
 
 bool sim800h_imei(char *imei, const uint32_t timeout) {
   sim800h_send("AT+GSN");
   sim800h_readline(imei, 16, timeout);
   CIODEBUG("GSM (%02d) -> '%s'\r\n", strnlen(imei, 15), imei);
-  return sim800h_expect("OK", 500);
+  return sim800h_expect_OK(500);
 }

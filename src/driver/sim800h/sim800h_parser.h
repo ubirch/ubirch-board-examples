@@ -72,6 +72,8 @@ enum sim800h_creg_status {
     CREG_ROAMING
 };
 
+const char *RESPONSE_OK = "OK";
+
 /*!
  * Check if this line is an unsolicited result code.
  * @return the code index or -1 if it is no known code
@@ -96,6 +98,11 @@ bool sim800h_expect_urc(int n, uint32_t timeout);
  * @return true if received or false if not
  */
 bool sim800h_expect(const char *expected, uint32_t timeout);
+
+static inline bool sim800h_expect_OK(uint32_t timeout) {
+  return sim800h_expect(RESPONSE_OK, timeout);
+}
+
 
 /*!
  * Expect a formatted response, blocks until the response is received or timeout.

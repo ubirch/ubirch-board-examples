@@ -174,8 +174,8 @@ void sim800h_enable() {
   for (int i = 0; i < 5; i++) {
     sim800h_send("ATE0");
     // if we still have echo on, this fails and falls through to the next OK
-    if(sim800h_expect("OK", 1000)) break;
-    if(sim800h_expect("OK", 1000)) break;
+    if(sim800h_expect_OK(1000)) break;
+    if(sim800h_expect_OK(1000)) break;
   }
 }
 
