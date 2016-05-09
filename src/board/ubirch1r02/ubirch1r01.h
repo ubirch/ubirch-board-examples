@@ -42,8 +42,8 @@
 // on-board button (PTD0)
 #define BOARD_BUTTON0_PORT      PORTD
 #define BOARD_BUTTON0_GPIO      GPIOD
-#define BOARD_BUTTON0_PIN       0
 #define BOARD_BUTTON0_PORT_CLOCK kCLOCK_PortD
+#define BOARD_BUTTON0_PIN       0
 #define BOARD_BUTTON0_IRQ       PORTD_IRQHandler
 
 // K82F NMI pin (PTA4)
@@ -55,9 +55,8 @@
 // header row switchable power pins
 #define BOARD_PWR_EN_PORT       PORTC
 #define BOARD_PWR_EN_GPIO       GPIOC
-#define BOARD_PWR_EN_PIN        8
-#define BOARD_PWR_EN_ALT        kPORT_MuxAsGpio
 #define BOARD_PWR_EN_PORT_CLOCK kCLOCK_PortC
+#define BOARD_PWR_EN_PIN        8
 
 // I2C configuration
 #define BOARD_I2C               I2C2

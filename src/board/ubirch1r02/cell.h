@@ -48,8 +48,10 @@
 #endif
 
 // power domain enabler
+#define BOARD_CELL_PWR_DOMAIN       1
 #define BOARD_CELL_PWR_EN_PORT      PORTD
 #define BOARD_CELL_PWR_EN_GPIO      GPIOD
 #define BOARD_CELL_PWR_EN_PIN       7U
+#define BOARD_CELL_PWR_EN_CLOCK     kCLOCK_PortD
 
 #endif // _UBIRCH_CELL_BOARD_H_

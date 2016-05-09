@@ -49,13 +49,16 @@ int check_urc(const char *line) {
 
 void sim800h_send(const char *pattern, ...) {
   char cmd[255];
+
+  // cleanup the input buffer and check for URC messages
+  while(sim800h_readline(cmd, 254, 100)) check_urc(cmd);
+  cmd[0] = '\0';
+
   va_list ap;
   va_start(ap, pattern);
   vsnprintf(cmd, 254, pattern, ap);
   va_end(ap);
 
-  // cleanup the input buffer
-  while(sim800h_read() != -1);
   PRINTF("GSM (%02d) <- '%s'\r\n", strlen(cmd), cmd);
   sim800h_writeline(cmd);
 }
