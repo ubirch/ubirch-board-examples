@@ -166,7 +166,7 @@ int main(void) {
     sim800h_register(TIMEOUT);
     sim800h_gprs_attach(CELL_APN, CELL_USER, CELL_PWD, 6 * TIMEOUT);
     sim800h_battery(&status, &level, &voltage, TIMEOUT);
-    if(sim800h_location(&status, &lat, &lon, &date, TIMEOUT)) {
+    if (sim800h_location(&status, &lat, &lon, &date, 6 * TIMEOUT)) {
       rtc_set(&date);
     }
 
@@ -187,7 +187,7 @@ int main(void) {
     PRINTF("%04hd-%02hd-%02hd %02hd:%02hd:%02hd DONE.\r\n",
            date.year, date.month, date.day, date.hour, date.minute, date.second);
 
-    delay(60000);
+    delay(5 * 60000);
 
     rtc_get(&date);
     PRINTF("%04hd-%02hd-%02hd %02hd:%02hd:%02hd WAKEUP.\r\n",
