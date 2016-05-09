@@ -12,7 +12,7 @@ message(STATUS "selected board: ${BOARD}")
 
 project(ubirch-board C CXX ASM)
 
-add_definitions(-DNCIODEBUG)
+add_definitions(-DNCIODEBUG -DNCSTDEBUG)
 
 # include special libs
 include(cmake/Libraries/mmcau.cmake)

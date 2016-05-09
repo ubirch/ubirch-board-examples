@@ -23,19 +23,18 @@
 #ifndef _UBIRCH_SIM800H_DEBUG_
 #define _UBIRCH_SIM800H_DEBUG_
 
-#ifndef NDEBUG
-
 #include <fsl_debug_console.h>
-#define CIODEBUG(...)  PRINTF(__VA_ARGS__)
-#define CSTDEBUG(...)  PRINTF(__VA_ARGS__)
 
 #ifdef NCIODEBUG
-#  undef CIODEBUG
 #  define CIODEBUG(...)
+#else
+#  define CIODEBUG(...)  PRINTF(__VA_ARGS__)
 #endif
+
 #ifdef NCSTDEBUG
-#  undef CIODEBUG
 #  define CSTDEBUG(...)
+#else
+#  define CSTDEBUG(...)  PRINTF(__VA_ARGS__)
 #endif
 
 const char *reg_status[6] = {
@@ -46,7 +45,5 @@ const char *reg_status[6] = {
   "UNKNOWN",
   "ROAMING"
 };
-
-#endif
 
 #endif // _UBIRCH_SIM800H_DEBUG_
