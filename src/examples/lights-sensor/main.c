@@ -214,7 +214,14 @@ int main(void) {
             auth_hash, payload_hash, payload + 15);
     PRINTF("PAYLOAD: '%s'\r\n", message);
 
+    size_t response_size;
+    int http_status = sim800h_http_post("http://api.ubirch.com/lights",
+                                        &response_size, (uint8_t *) message, strlen(message),
+                                        5 * TIMEOUT);
+    PRINTF("HTTP: %d [%d byte]\r\n", http_status, response_size);
 
+    uint8_t buffer[response_size];
+    sim800h_http_read(buffer, 0, response_size, 2 * TIMEOUT);
 
     // switch off GSM module
     sim800h_disable();

@@ -1,3 +1,7 @@
+#include <stdint.h>
+#include <stddef.h>
+#include <fsl_debug_console.h>
+
 /**
  * @brief ubirch#1 SIM800H debug helpers.
  *
@@ -20,35 +24,12 @@
  * limitations under the License.
  */
 
-#ifndef _UBIRCH_SIM800H_DEBUG_
-#define _UBIRCH_SIM800H_DEBUG_
-
-#include <fsl_debug_console.h>
-
-#ifdef NCIODEBUG
-#  define CIODEBUG(...)
-#  define CIODUMP(...)
-#else
-#  define CIODEBUG(...)  PRINTF(__VA_ARGS__)
-#  define CIODUMP(buffer, size) dump_buffer(buffer, size)
-#endif
-
-#ifdef NCSTDEBUG
-#  define CSTDEBUG(...)
-#else
-#  define CSTDEBUG(...)  PRINTF(__VA_ARGS__)
-#endif
-
-const char *reg_status[6] = {
-  "NOT SEARCHING",
-  "HOME",
-  "SEARCHING",
-  "DENIED",
-  "UNKNOWN",
-  "ROAMING"
-};
-
-/*! @brief Dump the buffer in hex and ascii format. */
-void dump_buffer(const uint8_t *b, size_t size);
-
-#endif // _UBIRCH_SIM800H_DEBUG_
+void dump_buffer(const uint8_t *b, size_t size) {
+  for (int i = 0; i < size; i += 16) {
+    PRINTF("GSM %04d -- ", i);
+    for (int j = 0; j < 16; j++) if ((i + j) < size) PRINTF("%02x ", b[i + j]); else PRINTF("   ");
+    for (int j = 0; j < 16 && (i + j) < size; j++)
+      PRINTF("%c", b[i + j] >= 0x20 && b[i + j] <= 0x7E ? b[i + j] : '.');
+    PRINTF("\r\n");
+  }
+}

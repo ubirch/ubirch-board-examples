@@ -23,4 +23,22 @@
 #ifndef _UBIRCH_SIM800H_HTTP_H_
 #define _UBIRCH_SIM800H_HTTP_H_
 
+typedef enum sim800h_http_methods {
+    HTTP_GET = 0,
+    HTTP_POST = 1
+} sim800h_http_method_t;
+
+
+int sim800h_http_prepare(const char *url, uint32_t timeout);
+
+int sim800h_http(sim800h_http_method_t op, size_t *res_size, uint32_t timeout);
+
+size_t sim800h_http_write(const uint8_t *buffer, size_t size, uint32_t timeout);
+
+size_t sim800h_http_read(uint8_t *buffer, uint32_t start, size_t size, uint32_t timeout);
+
+int sim800h_http_get(const char *url, size_t *res_size, uint32_t timeout);
+
+int sim800h_http_post(const char *url, size_t *res_size, uint8_t *request, size_t req_size, uint32_t timeout);
+
 #endif // _UBIRCH_SIM800H_HTTP_H_

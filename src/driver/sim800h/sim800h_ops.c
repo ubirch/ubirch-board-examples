@@ -27,16 +27,14 @@
 #include "sim800h_core.h"
 #include "sim800h_debug.h"
 
-#define REMAINING(t) (((t) - timer_read())/1000)
-
 bool sim800h_register(const uint32_t timeout) {
-  uint32_t us_target = timer_schedule_in(timeout * 1000);
+  uint32_t deadline = timer_read() + timeout * 1000;
 
   bool registered = false;
-  while (!registered && (timer_read() < us_target)) {
+  while (!registered && (timer_read() < deadline)) {
     int bearer = 0, status = 0;
     sim800h_send("AT+CREG?");
-    const int matched = sim800h_expect_scan("+CREG: %d,%d", REMAINING(us_target), &bearer, &status);
+    const int matched = sim800h_expect_scan("+CREG: %d,%d", REMAINING(deadline), &bearer, &status);
     sim800h_expect_OK(500);
     if (matched == 2) {
       CSTDEBUG("GSM INFO !! [%02d] %s\r\n", status, status < 6 ? reg_status[status] : "???");
@@ -49,73 +47,73 @@ bool sim800h_register(const uint32_t timeout) {
 }
 
 bool sim800h_gprs_attach(const char *apn, const char *user, const char *password, const uint32_t timeout) {
-  uint32_t us_target = timer_schedule_in(timeout * 1000);
+  uint32_t deadline = timer_read() + timeout * 1000;
 
   // shut down any previous GPRS connection
   sim800h_send("AT+CIPSHUT");
-  if (!sim800h_expect("SHUT OK", REMAINING(us_target))) return false;
+  if (!sim800h_expect("SHUT OK", REMAINING(deadline))) return false;
 
   // enable multiplex mode (TODO check it necessary, I read somewhere multiplex mode is more stable)
   sim800h_send("AT+CIPMUX=1");
-  if (!sim800h_expect_OK(REMAINING(us_target))) return false;
+  if (!sim800h_expect_OK(REMAINING(deadline))) return false;
 
   // enable manual receive mode
   sim800h_send("AT+CIPRXGET=1");
-  if (!sim800h_expect_OK(REMAINING(us_target))) return false;
+  if (!sim800h_expect_OK(REMAINING(deadline))) return false;
 
   // attach to the network
   bool attached = false;
   do {
     sim800h_send("AT+CGATT=1");
-    attached = sim800h_expect_OK(REMAINING(us_target));
+    attached = sim800h_expect_OK(REMAINING(deadline));
     if (!attached) delay(1000);
-  } while (!attached && (timer_read() < us_target));
+  } while (!attached && (timer_read() < deadline));
   if (!attached) return false;
 
   // configure connection
   sim800h_send("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"");
-  if (!sim800h_expect_OK(REMAINING(us_target))) return false;
+  if (!sim800h_expect_OK(REMAINING(deadline))) return false;
 
   // set bearer profile access point name
   if (apn) {
     sim800h_send("AT+SAPBR=3,1,\"APN\",\"%s\"", apn);
-    if (!sim800h_expect_OK(REMAINING(us_target))) return false;
+    if (!sim800h_expect_OK(REMAINING(deadline))) return false;
     if (user) {
       sim800h_send("AT+SAPBR=3,1,\"USER\",\"%s\"", user);
-      if (!sim800h_expect_OK(REMAINING(us_target))) return false;
+      if (!sim800h_expect_OK(REMAINING(deadline))) return false;
     }
     if (password) {
       sim800h_send("AT+SAPBR=3,1,\"PWD\",\"%s\"", password);
-      if (!sim800h_expect_OK(REMAINING(us_target))) return false;
+      if (!sim800h_expect_OK(REMAINING(deadline))) return false;
     }
   }
 
   // open GPRS context
   sim800h_send("AT+SAPBR=1,1");
-  sim800h_expect_OK(REMAINING(us_target));
+  sim800h_expect_OK(REMAINING(deadline));
 
   int opened;
   do {
     sim800h_send("AT+SAPBR=2,1");
-    sim800h_expect_scan("+SAPBR: 1,%d", REMAINING(us_target), &opened);
-    if(!sim800h_expect_OK(REMAINING(us_target))) return false;
+    sim800h_expect_scan("+SAPBR: 1,%d", REMAINING(deadline), &opened);
+    if(!sim800h_expect_OK(REMAINING(deadline))) return false;
     delay(1000);
-  } while (opened != 1 && (timer_read() < us_target));
+  } while (opened != 1 && (timer_read() < deadline));
 
   return attached;
 }
 
 bool sim800h_gprs_detach(uint32_t timeout) {
-  uint32_t us_target = timer_schedule_in(timeout * 1000);
+  uint32_t deadline = timer_read() + timeout * 1000;
 
   sim800h_send("AT+CIPSHUT");
-  if (!sim800h_expect("SHUT OK", REMAINING(us_target))) return false;
+  if (!sim800h_expect("SHUT OK", REMAINING(deadline))) return false;
 
   sim800h_send("AT+SAPBR=0,1");
-  if (!sim800h_expect_OK(REMAINING(us_target))) return false;
+  if (!sim800h_expect_OK(REMAINING(deadline))) return false;
 
   sim800h_send("AT+CGATT=0");
-  return sim800h_expect_OK(REMAINING(us_target));
+  return sim800h_expect_OK(REMAINING(deadline));
 }
 
 
@@ -148,7 +146,7 @@ bool sim800h_location(status_t *status, double *lat, double *lon, rtc_datetime_t
 
 bool sim800h_imei(char *imei, const uint32_t timeout) {
   sim800h_send("AT+GSN");
-  sim800h_readline(imei, 16, timeout);
+  sim800h_readline(imei, 15, timeout);
   CIODEBUG("GSM (%02d) -> '%s'\r\n", strnlen(imei, 15), imei);
   return sim800h_expect_OK(500);
 }

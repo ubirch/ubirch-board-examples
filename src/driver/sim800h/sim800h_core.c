@@ -174,8 +174,8 @@ void sim800h_enable() {
   for (int i = 0; i < 5; i++) {
     sim800h_send("ATE0");
     // if we still have echo on, this fails and falls through to the next OK
-    if(sim800h_expect_OK(1000)) break;
-    if(sim800h_expect_OK(1000)) break;
+    if (sim800h_expect_OK(1000)) break;
+    if (sim800h_expect_OK(1000)) break;
   }
 }
 
@@ -197,12 +197,28 @@ int sim800h_read() {
   return c;
 }
 
-size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout) {
-  uint32_t us_target = timer_read() + timeout * 1000;
-  timer_schedule(us_target);
+size_t sim800h_read_binary(uint8_t *buffer, size_t max, uint32_t timeout) {
+  uint32_t deadline = timer_schedule_in(timeout * 1000);
   size_t idx = 0;
-  while (true) {
-    if (timer_read() > us_target) break;
+  while (idx < max) {
+    if (timer_read() > deadline) break;
+    int c = sim800h_read();
+    if (c == -1) {
+      // nothing in the buffer, allow some sleep
+      __WFI();
+      continue;
+    }
+    if (max - idx) buffer[idx++] = (uint8_t) c;
+  }
+
+  return idx;
+}
+
+size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout) {
+  uint32_t deadline = timer_schedule_in(timeout * 1000);
+  size_t idx = 0;
+  while (idx < max) {
+    if (timer_read() > deadline) break;
 
     int c = sim800h_read();
     if (c == -1) {
@@ -226,8 +242,12 @@ size_t sim800h_readline(char *buffer, size_t max, uint32_t timeout) {
   return idx;
 }
 
+void sim800h_write(const uint8_t *buffer, size_t size) {
+  LPUART_WriteBlocking(BOARD_CELL_UART, buffer, size);
+}
+
 void sim800h_writeline(const char *buffer) {
-  LPUART_WriteBlocking(BOARD_CELL_UART, (const uint8_t *) buffer, strlen(buffer));
-  LPUART_WriteBlocking(BOARD_CELL_UART, (const uint8_t *) "\r\n", 2);
+  sim800h_write((const uint8_t *) buffer, strlen(buffer));
+  sim800h_write((const uint8_t *) "\r\n", 2);
 }
 

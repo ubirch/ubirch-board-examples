@@ -28,6 +28,8 @@
 
 #include <stdbool.h>
 
+#define REMAINING(t) (((t) - timer_read())/1000)
+
 #define CELL_PARSER_BUFSIZE 255
 
 /*!
