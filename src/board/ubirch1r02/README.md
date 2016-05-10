@@ -39,6 +39,6 @@ The pin configuration is as follows:
 * external I2C is the I2C2
 * internal connection to the ATECC chip is I2C0
 
-![ubirc #1 r0.2 front](ubirch1r02-front.jpg)
-![ubirc #1 r0.2 back](ubirch1r02-back.jpg)
+![ubirch#1 r0.2 front](ubirch1r02-front.jpg)
+![ubirch#1 r0.2 back](ubirch1r02-back.jpg)
 
