@@ -34,6 +34,7 @@
 #include <rtc.h>
 #include <wolfssl/wolfcrypt/sha512.h>
 #include <wolfssl/wolfcrypt/coding.h>
+#include <crypto.h>
 #include "config.h"
 
 #define TIMEOUT 5000
@@ -174,22 +175,14 @@ int main(void) {
     }
 
     // create hashes from the auth key and the payload
-    Sha512 sha512;
-    word32 base64len;
     byte signature[SHA512_DIGEST_SIZE];
 
     char payload[128];
     sim800h_imei(payload, TIMEOUT);
+    if (crypto_sha512((const byte *) payload, strnlen(payload, 127), signature) == cStatus_Failed)
+      PRINTF("auth hash failed\r\n");
 
-    wc_InitSha512(&sha512);
-    wc_Sha512Update(&sha512, (const byte *) payload, strnlen(payload, 15));
-    wc_Sha512Final(&sha512, signature);
-
-    Base64_Encode_NoNl(signature, 64, NULL, &base64len);
-    byte auth_hash[base64len + 1];
-    int r = Base64_Encode_NoNl(signature, 64, auth_hash, &base64len);
-    auth_hash[base64len] = 0;
-    PRINTF("%d (%d) %s\r\n", r, base64len, payload);
+    char *auth_hash = crypto_base64_encode(signature, SHA512_DIGEST_SIZE);
     PRINTF("AUTH: %s\r\n", auth_hash);
 
     // hashed payload structure IMEI{DATA}
@@ -199,20 +192,19 @@ int main(void) {
             rgb.red, rgb.green, rgb.blue, sensitivity == ISL_MODE_375LUX ? 0 : 1,
             lat, lon, level, loop_counter, error_flag);
 
-    wc_InitSha512(&sha512);
-    wc_Sha512Update(&sha512, (const byte *) payload, strnlen(payload, 127));
-    wc_Sha512Final(&sha512, signature);
+    if (crypto_sha512((const byte *) payload, strnlen(payload, 127), signature) == cStatus_Failed)
+      PRINTF("payload hash failed\r\n");
 
-    Base64_Encode_NoNl(signature, 64, NULL, &base64len);
-    byte payload_hash[base64len + 1];
-    Base64_Encode_NoNl(signature, 64, payload_hash, &base64len);
-    auth_hash[base64len] = 0;
+    char *payload_hash = crypto_base64_encode(signature, SHA512_DIGEST_SIZE);
     PRINTF("SIGNATURE: %s\r\n", payload_hash);
 
     char message[300];
     sprintf(message, "{\"v\":\"0.0.1\",\"a\":\"%s\",\"s\":\"%s\",\"p\":%s}",
             auth_hash, payload_hash, payload + 15);
-    PRINTF("PAYLOAD: '%s'\r\n", message);
+
+    // free hashes
+    free(auth_hash);
+    free(payload_hash);
 
     size_t response_size;
     int http_status = sim800h_http_post("http://api.ubirch.com/lights",
@@ -237,3 +229,4 @@ int main(void) {
     loop_counter++;
   }
 }
+

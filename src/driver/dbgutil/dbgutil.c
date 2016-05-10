@@ -1,6 +1,3 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <fsl_debug_console.h>
 
 /**
  * @brief ubirch#1 SIM800H debug helpers.
@@ -24,9 +21,13 @@
  * limitations under the License.
  */
 
-void dump_buffer(const uint8_t *b, size_t size) {
+#include <stdint.h>
+#include <stddef.h>
+#include <fsl_debug_console.h>
+
+void dbg_dump(const char *prefix, const uint8_t *b, size_t size) {
   for (int i = 0; i < size; i += 16) {
-    PRINTF("GSM %04d -- ", i);
+    PRINTF("%s %04d ", prefix, i);
     for (int j = 0; j < 16; j++) if ((i + j) < size) PRINTF("%02x ", b[i + j]); else PRINTF("   ");
     for (int j = 0; j < 16 && (i + j) < size; j++)
       PRINTF("%c", b[i + j] >= 0x20 && b[i + j] <= 0x7E ? b[i + j] : '.');

@@ -20,33 +20,10 @@
  * limitations under the License.
  */
 
-#ifndef _UBIRCH_SIM800H_DEBUG_
-#define _UBIRCH_SIM800H_DEBUG_
+#ifndef _UBIRCH_DEBUG_H_
+#define _UBIRCH_DEBUG_H_
 
-#include <fsl_debug_console.h>
-#include <dbgutil.h>
+/*! @brief Dump the buffer in hex and ascii format. */
+void dbg_dump(const char *prefix, const uint8_t *b, size_t size);
 
-#ifdef NCIODEBUG
-#  define CIODEBUG(...)
-#  define CIODUMP(...)
-#else
-#  define CIODEBUG(...)  PRINTF(__VA_ARGS__)
-#  define CIODUMP(buffer, size) dbg_dump("GSM", buffer, size)
-#endif
-
-#ifdef NCSTDEBUG
-#  define CSTDEBUG(...)
-#else
-#  define CSTDEBUG(...)  PRINTF(__VA_ARGS__)
-#endif
-
-const char *reg_status[6] = {
-  "NOT SEARCHING",
-  "HOME",
-  "SEARCHING",
-  "DENIED",
-  "UNKNOWN",
-  "ROAMING"
-};
-
-#endif // _UBIRCH_SIM800H_DEBUG_
+#endif // _UBIRCH_DEBUG_H_

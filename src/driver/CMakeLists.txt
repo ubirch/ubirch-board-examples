@@ -1,3 +1,5 @@
+add_subdirectory(crypto)
+add_subdirectory(dbgutil)
 add_subdirectory(i2c)
 add_subdirectory(isl29125)
 add_subdirectory(rtc)
