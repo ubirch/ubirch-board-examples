@@ -179,7 +179,7 @@ int main(void) {
 
     char payload[128];
     sim800h_imei(payload, TIMEOUT);
-    if (crypto_sha512((const byte *) payload, strnlen(payload, 127), signature) == cStatus_Failed)
+    if (crypto_sha512((const byte *) payload, strnlen(payload, 127), signature) == cStatus_Failure)
       PRINTF("auth hash failed\r\n");
 
     char *auth_hash = crypto_base64_encode(signature, SHA512_DIGEST_SIZE);
@@ -192,7 +192,7 @@ int main(void) {
             rgb.red, rgb.green, rgb.blue, sensitivity == ISL_MODE_375LUX ? 0 : 1,
             lat, lon, level, loop_counter, error_flag);
 
-    if (crypto_sha512((const byte *) payload, strnlen(payload, 127), signature) == cStatus_Failed)
+    if (crypto_sha512((const byte *) payload, strnlen(payload, 127), signature) == cStatus_Failure)
       PRINTF("payload hash failed\r\n");
 
     char *payload_hash = crypto_base64_encode(signature, SHA512_DIGEST_SIZE);

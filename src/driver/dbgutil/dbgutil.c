@@ -1,5 +1,4 @@
-
-/**
+/*!
  * @brief ubirch#1 SIM800H debug helpers.
  *
  * @author Matthias L. Jugel

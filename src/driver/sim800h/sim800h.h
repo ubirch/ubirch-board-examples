@@ -1,4 +1,4 @@
-/**
+/*!
  * @brief ubirch#1 SIM800H cell phone chip driver.
  *
  * This is the SIM800H driver for the cell phone chip on the ubirch#1.

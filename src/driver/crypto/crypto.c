@@ -12,8 +12,8 @@ int crypto_sha512(const byte *message, size_t size, byte *hash) {
   Sha512 sha512;
 
   wc_InitSha512(&sha512);
-  if(wc_Sha512Update(&sha512, message, size)) return cStatus_Failed;
-  if(wc_Sha512Final(&sha512, hash)) return cStatus_Failed;
+  if(wc_Sha512Update(&sha512, message, size)) return cStatus_Failure;
+  if(wc_Sha512Final(&sha512, hash)) return cStatus_Failure;
   BUFDEBUG("SHA512", hash, SHA512_DIGEST_SIZE);
 
   return cStatus_Success;
