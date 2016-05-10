@@ -64,12 +64,12 @@ const char *SIM800H_URC[] = {
 };
 
 enum sim800h_creg_status {
-    CREG_NOT_SEARCHING,
-    CREG_HOME,
-    CREG_SEARCHING,
-    CREG_DENIED,
-    CREG_UNKNOWN,
-    CREG_ROAMING
+    CREG_NOT_SEARCHING = 0,
+    CREG_HOME = 1,
+    CREG_SEARCHING = 2,
+    CREG_DENIED = 3,
+    CREG_UNKNOWN = 4,
+    CREG_ROAMING = 5
 };
 
 const char *RESPONSE_OK = "OK";

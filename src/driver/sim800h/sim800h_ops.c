@@ -40,7 +40,7 @@ bool sim800h_register(const uint32_t timeout) {
     sim800h_expect_OK(500);
     if (matched == 2) {
       CSTDEBUG("GSM INFO !! [%02d] %s\r\n", status, status < 6 ? reg_status[status] : "???");
-      registered = ((status == CREG_HOME || status == CREG_ROAMING));
+      registered = ((status == CREG_HOME) || (status == CREG_ROAMING));
     }
     if (!registered) delay(2000);
   }

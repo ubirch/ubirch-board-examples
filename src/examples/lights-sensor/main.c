@@ -163,17 +163,35 @@ int main(void) {
            rgb.blue);
 
     // power on GSM module
-
     sim800h_enable();
-    sim800h_register(TIMEOUT);
+    sim800h_register(6 * TIMEOUT);
     sim800h_gprs_attach(CELL_APN, CELL_USER, CELL_PWD, 6 * TIMEOUT);
+
+    // get battery status and geo coordinates, set time if possible
     sim800h_battery(&status, &level, &voltage, TIMEOUT);
     if (sim800h_location(&status, &lat, &lon, &date, 6 * TIMEOUT)) {
       rtc_set(&date);
     }
 
+    // create hashes from the auth key and the payload
+    Sha512 sha512;
+    word32 base64len;
+    byte signature[SHA512_DIGEST_SIZE];
+
     char payload[128];
     sim800h_imei(payload, TIMEOUT);
+
+    wc_InitSha512(&sha512);
+    wc_Sha512Update(&sha512, (const byte *) payload, strnlen(payload, 15));
+    wc_Sha512Final(&sha512, signature);
+
+    Base64_Encode_NoNl(signature, 64, NULL, &base64len);
+    byte auth_hash[base64len + 1];
+    int r = Base64_Encode_NoNl(signature, 64, auth_hash, &base64len);
+    auth_hash[base64len] = 0;
+    PRINTF("%d (%d) %s\r\n", r, base64len, payload);
+    PRINTF("AUTH: %s\r\n", auth_hash);
+
     // hashed payload structure IMEI{DATA}
     // Example: '123456789012345{"r":44,"g":33,"b":22,"s":0,"lat":"12.475886","lon":"51.505264","bat":100,"lps":99999}'
     sprintf(payload + 15,
@@ -181,31 +199,21 @@ int main(void) {
             rgb.red, rgb.green, rgb.blue, sensitivity == ISL_MODE_375LUX ? 0 : 1,
             lat, lon, level, loop_counter, error_flag);
 
-    PRINTF("PAYLOAD: '%s'\r\n", payload);
-
-    Sha512 sha512;
-    byte signature[64];
-
     wc_InitSha512(&sha512);
-    wc_Sha512Update(&sha512, (const byte *) payload, strnlen(payload, 128));
+    wc_Sha512Update(&sha512, (const byte *) payload, strnlen(payload, 127));
     wc_Sha512Final(&sha512, signature);
 
-    PRINTF("SIGNATURE: ");
-    for(int i = 0; i < 64; i++) PRINTF("%02x", signature[i]);
-    PRINTF("\r\n");
+    Base64_Encode_NoNl(signature, 64, NULL, &base64len);
+    byte payload_hash[base64len + 1];
+    Base64_Encode_NoNl(signature, 64, payload_hash, &base64len);
+    auth_hash[base64len] = 0;
+    PRINTF("SIGNATURE: %s\r\n", payload_hash);
 
-    word32 base64len;
-    Base64_EncodeEsc(signature, 64, NULL, &base64len);
+    char message[300];
+    sprintf(message, "{\"v\":\"0.0.1\",\"a\":\"%s\",\"s\":\"%s\",\"p\":%s}",
+            auth_hash, payload_hash, payload + 15);
+    PRINTF("PAYLOAD: '%s'\r\n", message);
 
-    byte payload_hash[base64len];
-    Base64_EncodeEsc(signature, 64, payload_hash, &base64len);
-
-    PRINTF("SIGNATURE (BASE64): %s\r\n", payload_hash);
-
-//    char message[300];
-//    sprintf(message,
-//              "{\"v\":\"0.0.1\",\"a\":\"%s\",\"s\":\"%s\",\"p\":%s}",
-//              auth_hash, payload_hash, payload + 15);
 
 
     // switch off GSM module
