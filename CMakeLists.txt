@@ -20,6 +20,7 @@ include(cmake/Libraries/wolfssl.cmake)
 include(cmake/Libraries/flashutil.cmake)
 
 add_subdirectory(src/board)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/driver)
 add_subdirectory(src/driver)
 add_subdirectory(src/examples)
 

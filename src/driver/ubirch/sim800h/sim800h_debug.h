@@ -24,7 +24,7 @@
 #define _UBIRCH_SIM800H_DEBUG_
 
 #include <fsl_debug_console.h>
-#include <dbgutil.h>
+#include <ubirch/dbgutil/dbgutil.h>
 
 #ifdef NCIODEBUG
 #  define CIODEBUG(...)

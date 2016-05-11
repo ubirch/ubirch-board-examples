@@ -1,7 +1,6 @@
-#include <timer.h>
-#include <rtc.h>
-#include <sim800h_core.h>
-#include <sim800h_ops.h>
+#include <ubirch/timer/timer.h>
+#include <ubirch/rtc/rtc.h>
+#include <ubirch/sim800h/sim800h.h>
 #include "config.h"
 
 #define CELL_ENABLED 0

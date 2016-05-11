@@ -20,7 +20,7 @@
  * limitations under the License.
  */
 
-#include <timer.h>
+#include <ubirch/timer/timer.h>
 #include <fsl_rtc.h>
 #include <stdlib.h>
 #include "sim800h_parser.h"

@@ -20,10 +20,9 @@
  * limitations under the License.
  */
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <board.h>
-#include <timer.h>
+#include <ubirch/timer/timer.h>
 
 void SysTick_Handler() {
   static uint32_t counter = 0;

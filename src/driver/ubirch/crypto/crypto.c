@@ -1,6 +1,6 @@
 #include <wolfssl/wolfcrypt/sha512.h>
 #include <wolfssl/wolfcrypt/coding.h>
-#include <dbgutil.h>
+#include <ubirch/dbgutil/dbgutil.h>
 #include "crypto.h"
 
 #ifndef NDEBUG
