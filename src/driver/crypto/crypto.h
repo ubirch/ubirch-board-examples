@@ -41,3 +41,11 @@ int crypto_sha512(const byte *message, size_t size, byte *hash);
  * @return a pointer to a character string containing the base64 coded data
  */
 char *crypto_base64_encode(const byte *in, size_t inlen);
+
+/*!
+ * @brief Decode a Base64 encoded character string into a byte array.
+ * @param in the encoded character string
+ * @patam outlen the length of the decoded byte array
+ * @return the decoded byte array
+ */
+byte *crypto_base64_decode(const char *in, size_t *outlen);

@@ -1,6 +1,5 @@
 #include <wolfssl/wolfcrypt/sha512.h>
 #include <wolfssl/wolfcrypt/coding.h>
-#include <fsl_debug_console.h>
 #include <dbgutil.h>
 #include "crypto.h"
 
@@ -28,6 +27,12 @@ char *crypto_base64_encode(const byte *in, size_t inlen) {
   Base64_Encode_NoNl(in, inlen, (byte *) out, &outlen);
   out[outlen] = 0;
 
+  return out;
+}
+
+byte *crypto_base64_decode(const char *in, size_t *outlen) {
+  byte *out = malloc(strlen(in));
+  Base64_Decode((const byte *) in, strlen(in), out, outlen);
   return out;
 }
 
