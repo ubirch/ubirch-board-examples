@@ -188,7 +188,7 @@ int main(void) {
     // hashed payload structure IMEI{DATA}
     // Example: '123456789012345{"r":44,"g":33,"b":22,"s":0,"lat":"12.475886","lon":"51.505264","bat":100,"lps":99999}'
     sprintf(payload + 15,
-            "{\"r\":%u,\"g\":%u,\"b\":%u,\"s\":%1u,\"la\":\"%f\",\"lo\":\"%f\",\"ba\":%3u,\"lp\":%u,\"e\":%u}",
+            "{\"r\":%u,\"g\":%u,\"b\":%u,\"s\":%1u,\"la\":\"%f\",\"lo\":\"%f\",\"ba\":%u,\"lp\":%u,\"e\":%u}",
             rgb.red, rgb.green, rgb.blue, sensitivity == ISL_MODE_375LUX ? 0 : 1,
             lat, lon, level, loop_counter, error_flag);
 
