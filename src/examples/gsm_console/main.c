@@ -6,8 +6,7 @@
 #include <stdbool.h>
 #include <board.h>
 #include <stdio.h>
-#include <sim800h_core.h>
-#include <sim800h_ops.h>
+#include <ubirch/sim800h/sim800h.h>
 #include "config.h"
 
 static char buffer[128];

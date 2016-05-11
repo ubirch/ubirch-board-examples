@@ -1,11 +1,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "ssd1306.h"
-#include <i2c.h>
 #include <utilities/fsl_debug_console.h>
 #include <board.h>
-#include <timer.h>
+#include <ubirch/i2c/i2c.h>
+#include <ubirch/timer/timer.h>
+#include <ubirch/ssd1306/ssd1306.h>
 #include "font5x5.h"
 
 const i2c_config_t i2c_config = {

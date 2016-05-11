@@ -21,8 +21,7 @@
  */
 
 #include <utilities/fsl_debug_console.h>
-#include <drivers/fsl_i2c.h>
-#include <i2c.h>
+#include <ubirch/i2c/i2c.h>
 #include "isl29125.h"
 
 bool isl_set(uint8_t reg, uint8_t data) {

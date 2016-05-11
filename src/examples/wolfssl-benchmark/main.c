@@ -31,9 +31,8 @@
 #include <drivers/fsl_trng.h>
 #include <wolfssl/wolfcrypt/rsa.h>
 #include <wolfssl/wolfcrypt/signature.h>
-#include <drivers/fsl_pit.h>
 #include <wolfssl/wolfcrypt/ed25519.h>
-#include <timer.h>
+#include <ubirch/timer/timer.h>
 
 #define BENCHMARK_LOOPS 5
 

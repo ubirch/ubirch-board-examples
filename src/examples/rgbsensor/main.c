@@ -24,11 +24,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <isl29125.h>
-#include <i2c.h>
-#include <utilities/fsl_debug_console.h>
 #include <board.h>
-#include <timer.h>
+#include <ubirch/isl29125/isl29125.h>
+#include <ubirch/i2c/i2c.h>
+#include <ubirch/timer/timer.h>
 
 #define ISL_375LUX_MAX 65000
 #define ISL_10KLUX_MIN 8000

@@ -1,10 +1,12 @@
 #include <wolfssl/wolfcrypt/sha512.h>
 #include <wolfssl/wolfcrypt/coding.h>
-#include <dbgutil.h>
+#include <ubirch/dbgutil/dbgutil.h>
 #include "crypto.h"
 
 #ifndef NDEBUG
 #  define BUFDEBUG(p, b,s) dbg_dump((p), (b), (s))
+#else
+#  define BUFDEBUG(...)
 #endif
 
 int crypto_sha512(const byte *message, size_t size, byte *hash) {

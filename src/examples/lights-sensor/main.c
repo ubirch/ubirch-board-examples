@@ -25,16 +25,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <isl29125.h>
-#include <i2c.h>
-#include <utilities/fsl_debug_console.h>
 #include <board.h>
-#include <timer.h>
-#include <sim800h.h>
-#include <rtc.h>
+#include <ubirch/isl29125/isl29125.h>
+#include <ubirch/i2c/i2c.h>
+#include <ubirch/timer/timer.h>
+#include <ubirch/sim800h/sim800h.h>
+#include <ubirch/rtc/rtc.h>
 #include <wolfssl/wolfcrypt/sha512.h>
-#include <wolfssl/wolfcrypt/coding.h>
-#include <crypto.h>
+#include <ubirch/crypto/crypto.h>
 #include "config.h"
 
 #define TIMEOUT 5000

@@ -22,7 +22,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <timer.h>
+#include <ubirch/timer/timer.h>
 #include "sim800h.h"
 #include "sim800h_debug.h"
 

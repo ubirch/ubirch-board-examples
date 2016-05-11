@@ -27,8 +27,8 @@
 
 #include <board.h>
 #include <stdio.h>
-#include <i2c.h>
-#include <timer.h>
+#include <ubirch/i2c/i2c.h>
+#include <ubirch/timer/timer.h>
 
 static const i2c_config_t i2c_config = {
   .i2c = BOARD_I2C,

@@ -21,7 +21,7 @@
  */
 
 #include <drivers/fsl_lpuart.h>
-#include <timer.h>
+#include <ubirch/timer/timer.h>
 #include "sim800h_core.h"
 #include "sim800h_parser.h"
 #include "sim800h_debug.h"

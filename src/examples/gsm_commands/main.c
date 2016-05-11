@@ -5,9 +5,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <board.h>
-#include <sim800h_core.h>
-#include <sim800h_parser.h>
-#include <timer.h>
+#include <ubirch/sim800h/sim800h.h>
+#include <ubirch/timer/timer.h>
 
 void SysTick_Handler() {
   static uint32_t counter = 0;

@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-#include <i2c.h>
+#include <ubirch/i2c/i2c.h>
 #include <drivers/fsl_gpio.h>
 #include <drivers/fsl_port.h>
 #include "ssd1306.h"
