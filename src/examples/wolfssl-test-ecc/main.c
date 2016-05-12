@@ -30,17 +30,11 @@
 #include <drivers/fsl_trng.h>
 #include <wolfssl/wolfcrypt/signature.h>
 #include <wolfssl/wolfcrypt/ed25519.h>
+#include <ubirch/dbgutil/dbgutil.h>
 
 #include "public_key.h"
 
 const byte plaintext[] = "We love things.\n0a1b2c3d4e5f6g7h8i9j-UBIRCH\n";
-
-void print_buffer_hex(const byte *out, int len) {
-  for (int i = 0; i < len; i++) {
-    PRINTF("%02x", out[i]);
-  }
-  PRINTF("\r\n");
-}
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
@@ -52,14 +46,14 @@ void print_public_key(ed25519_key *key) {
   byte encoded_key[ED25519_PUB_KEY_SIZE];
   word32 len;
   wc_ed25519_export_public(key, encoded_key, &len);
-  print_buffer_hex(encoded_key, len);
+  dbg_dump("ECCPUB", encoded_key, len);
 }
 
 void print_private_key(ed25519_key *key) {
   byte encoded_key[ED25519_PRV_KEY_SIZE];
   word32 len;
   wc_ed25519_export_private(key, encoded_key, &len);
-  print_buffer_hex(encoded_key, len);
+  dbg_dump("ECCPRI", encoded_key, len);
 }
 
 void error(char *message) {
@@ -123,7 +117,7 @@ int main(void) {
   }
 
   PRINTF("-- SIGNATURE\r\n");
-  print_buffer_hex(signature, signatureLength);
+  dbg_dump("ECCSIG", signature, signatureLength);
 
 /* TODO encryption...
   PRINTF("- encrypting message\r\n");
