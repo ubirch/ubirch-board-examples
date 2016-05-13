@@ -26,4 +26,8 @@
 /*! @brief Dump the buffer in hex and ascii format. */
 void dbg_dump(const char *prefix, const uint8_t *b, size_t size);
 
+/*! @brief Dump the buffer in hex format readable by xxd. */
+void dbg_xxd(const char *prefix, const uint8_t *b, size_t size);
+
+
 #endif // _UBIRCH_DEBUG_H_
