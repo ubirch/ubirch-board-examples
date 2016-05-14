@@ -92,7 +92,7 @@ int init_board_key(unsigned int size) {
   wc_ed25519_init(&board_ecc_key);
   int r = wc_ed25519_make_key(&rng, size, &board_ecc_key);
   */
-  wc_ed25519_init(&recipient_public_key);
+  wc_ed25519_init(&board_ecc_key);
   int r = wc_ed25519_import_private_key(device_ecc_key, ED25519_KEY_SIZE,
                                         device_ecc_key + 32, ED25519_PUB_KEY_SIZE,
                                         &board_ecc_key);

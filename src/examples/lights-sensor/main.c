@@ -33,7 +33,21 @@
 #include <ubirch/rtc/rtc.h>
 #include <wolfssl/wolfcrypt/sha512.h>
 #include <ubirch/crypto/crypto.h>
+#include <wolfssl/wolfcrypt/ed25519.h>
+#include <ubirch/dbgutil/dbgutil.h>
 #include "config.h"
+
+// DEMO key
+const unsigned char device_ecc_key[] = {
+  0xec, 0x87, 0x3b, 0x71, 0x6f, 0x5d, 0xb1, 0x37, 0x3a, 0x4a, 0x6b, 0x5b,
+  0x60, 0x9f, 0x7c, 0xc7, 0xf6, 0x50, 0x16, 0x45, 0x05, 0x68, 0xee, 0x17,
+  0x4e, 0xc5, 0xaf, 0xb4, 0xa6, 0x9e, 0xcd, 0x6c, 0x23, 0x9a, 0xf3, 0x94,
+  0xc2, 0x62, 0x35, 0x28, 0x80, 0xcd, 0x7f, 0x6a, 0x19, 0x46, 0xc4, 0x7d,
+  0xd4, 0x7c, 0xf0, 0x7a, 0xdc, 0x80, 0x46, 0x62, 0x19, 0x0d, 0x94, 0x46,
+  0x23, 0x56, 0x17, 0x91
+};
+const unsigned int device_ecc_key_len = 64;
+
 
 #define TIMEOUT 5000
 
@@ -71,6 +85,9 @@ static const i2c_config_t i2c_config = {
   .SDA = BOARD_I2C_SDA_PIN,
   .baud = I2C_FULL_SPEED
 };
+
+// crypto key of the board
+uc_ed25519_key uc_key;
 
 // this counts up as long as we don't have a reset
 //static uint16_t loop_counter = 1;
@@ -132,6 +149,8 @@ int main(void) {
   board_console_init(BOARD_DEBUG_BAUD);
   PRINTF("ubirch lights-sensor v2.0\r\n");
 
+  uc_import_ecc_key(&uc_key, device_ecc_key, device_ecc_key_len);
+
   i2c_init(i2c_config);
   sim800h_init();
   rtc_init();
@@ -169,53 +188,63 @@ int main(void) {
     // get battery status and geo coordinates, set time if possible
     sim800h_battery(&status, &level, &voltage, TIMEOUT);
     if (sim800h_location(&status, &lat, &lon, &date, 6 * TIMEOUT)) {
+      PRINTF("setting current time from GSM\r\n");
+      PRINTF("%04hd-%02hd-%02hd %02hd:%02hd:%02hd\r\n",
+             date.year, date.month, date.day, date.hour, date.minute, date.second);
       rtc_set(&date);
     }
 
-    // create hashes from the auth key and the payload
-    byte signature[SHA512_DIGEST_SIZE];
-
+    // payload structure to be signed
+    // Example: '{"r":44,"g":33,"b":22,"s":0,"lat":"12.475886","lon":"51.505264","bat":100,"lps":99999}'
     char payload[128];
-    sim800h_imei(payload, TIMEOUT);
-    if (crypto_sha512((const byte *) payload, strnlen(payload, 127), signature) == cStatus_Failure)
-      PRINTF("auth hash failed\r\n");
-
-    char *auth_hash = crypto_base64_encode(signature, SHA512_DIGEST_SIZE);
-    PRINTF("AUTH: %s\r\n", auth_hash);
-
-    // hashed payload structure IMEI{DATA}
-    // Example: '123456789012345{"r":44,"g":33,"b":22,"s":0,"lat":"12.475886","lon":"51.505264","bat":100,"lps":99999}'
-    sprintf(payload + 15,
+    sprintf(payload,
             "{\"r\":%u,\"g\":%u,\"b\":%u,\"s\":%1u,\"la\":\"%f\",\"lo\":\"%f\",\"ba\":%u,\"lp\":%u,\"e\":%u}",
             rgb.red, rgb.green, rgb.blue, sensitivity == ISL_MODE_375LUX ? 0 : 1,
             lat, lon, level, loop_counter, error_flag);
 
-    if (crypto_sha512((const byte *) payload, strnlen(payload, 127), signature) == cStatus_Failure)
-      PRINTF("payload hash failed\r\n");
+    char imei[16];
+    sim800h_imei(imei, TIMEOUT);
 
-    char *payload_hash = crypto_base64_encode(signature, SHA512_DIGEST_SIZE);
+    char *auth_hash = uc_sha512_encoded((const unsigned char *) imei, strnlen(imei, 15));
+    char *pub_key_hash = uc_base64_encode(uc_key.p, 32);
+    char *payload_hash = uc_ecc_sign_encoded(&uc_key, (const unsigned char *) payload, strlen(payload));
+
+    PRINTF("PUBKEY   : %s\r\n", pub_key_hash);
+    PRINTF("AUTH     : %s\r\n", auth_hash);
     PRINTF("SIGNATURE: %s\r\n", payload_hash);
 
-    char message[300];
-    sprintf(message, "{\"v\":\"0.0.1\",\"a\":\"%s\",\"s\":\"%s\",\"p\":%s}",
-            auth_hash, payload_hash, payload + 15);
+    int message_size = snprintf(NULL, 0,
+                                "{\"v\":\"0.0.1\",\"a\":\"%s\",\"k\":\"%s\",\"s\":\"%s\",\"p\":%s}",
+                                auth_hash, pub_key_hash, payload_hash, payload);
+    char message[message_size + 1];
+    sprintf(message, "{\"v\":\"0.0.1\",\"a\":\"%s\",\"k\":\"%s\",\"s\":\"%s\",\"p\":%s}",
+            auth_hash, pub_key_hash, payload_hash, payload);
 
     // free hashes
     free(auth_hash);
+    free(pub_key_hash);
     free(payload_hash);
 
+    PRINTF("--MESSAGE (%d)\r\n", strlen(message));
+    PRINTF(message);
+    PRINTF("\r\n--MESSAGE\r\n");
     size_t response_size;
     int http_status = sim800h_http_post("http://api.ubirch.com/lights",
                                         &response_size, (uint8_t *) message, strlen(message),
                                         5 * TIMEOUT);
+
+    free(message);
+
     PRINTF("HTTP: %d [%d byte]\r\n", http_status, response_size);
 
     uint8_t buffer[response_size];
     sim800h_http_read(buffer, 0, response_size, 2 * TIMEOUT);
+    dbg_dump("GSM", buffer, response_size);
 
     // switch off GSM module
     sim800h_disable();
 
+    rtc_get(&date);
     PRINTF("%04hd-%02hd-%02hd %02hd:%02hd:%02hd DONE.\r\n",
            date.year, date.month, date.day, date.hour, date.minute, date.second);
 
