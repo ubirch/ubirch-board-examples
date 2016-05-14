@@ -205,6 +205,7 @@ int main(void) {
     char imei[16];
     sim800h_imei(imei, TIMEOUT);
 
+    // be aware that you need to free these strings after use
     char *auth_hash = uc_sha512_encoded((const unsigned char *) imei, strnlen(imei, 15));
     char *pub_key_hash = uc_base64_encode(uc_key.p, 32);
     char *payload_hash = uc_ecc_sign_encoded(&uc_key, (const unsigned char *) payload, strlen(payload));
@@ -233,6 +234,7 @@ int main(void) {
                                         &response_size, (uint8_t *) message, strlen(message),
                                         5 * TIMEOUT);
 
+    // the message is also dynamically allocated, free it after use
     free(message);
 
     PRINTF("HTTP: %d [%d byte]\r\n", http_status, response_size);
