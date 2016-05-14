@@ -1,5 +1,5 @@
 /*!
- * @brief ubirch#1 SIM800H debug helpers.
+ * @brief ubirch#1 crypto driver.
  *
  * @author Matthias L. Jugel
  * @date 2016-04-09
