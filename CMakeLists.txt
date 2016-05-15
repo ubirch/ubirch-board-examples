@@ -21,7 +21,6 @@ message(STATUS "wolfSSL: ${wolfSSL_DIR}")
 add_definitions(-DNCIODEBUG)
 
 # include special libs
-#include(cmake/Libraries/wolfssl.cmake)
 include(cmake/Libraries/flashutil.cmake)
 
 # board specific code (pins, peripherals etc.)
