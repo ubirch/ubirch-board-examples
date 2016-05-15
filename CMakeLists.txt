@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-
-set(CMAKE_TOOLCHAIN_FILE cmake/ubirch-arm-gcc-toolchain.cmake)
+set(CMAKE_TOOLCHAIN_FILE ../ubirch-arm-toolchain/cmake/ubirch-arm-gcc-toolchain.cmake)
 
 # set board type (ubirch#1 r0.2, FRDM-K82F, FRDM-KL82Z*) - * not yet implemented
 # you don't need to set it here, use 'cmake -DBOARD=<board> ..' during setup
@@ -13,11 +12,16 @@ message(STATUS "selected board: ${BOARD}")
 
 project(ubirch-board C CXX ASM)
 
+find_package(KinetisSDK 2.0 REQUIRED)
+find_package(wolfSSL 3.9.0 REQUIRED)
+
+message(STATUS "Kinetis SDK: ${KinetisSDK_DIR}")
+message(STATUS "wolfSSL: ${wolfSSL_DIR}")
+
 add_definitions(-DNCIODEBUG)
 
 # include special libs
-include(cmake/Libraries/mmcau.cmake)
-include(cmake/Libraries/wolfssl.cmake)
+#include(cmake/Libraries/wolfssl.cmake)
 include(cmake/Libraries/flashutil.cmake)
 
 # board specific code (pins, peripherals etc.)
@@ -31,6 +35,3 @@ add_subdirectory(src/driver)
 
 # example code
 add_subdirectory(src/examples)
-
-# original pek firmware apps
-include(cmake/ubirch-firmware-pek.cmake)

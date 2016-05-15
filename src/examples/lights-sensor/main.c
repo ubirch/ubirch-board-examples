@@ -99,6 +99,9 @@ static int loop_counter = 0;
 static uint8_t sensitivity = ISL_MODE_375LUX;
 static uint8_t infrared_filter = ISL_FILTER_IR_MAX;
 
+static char *const message_template = "{\"v\":\"0.0.2\",\"a\":\"%s\",\"k\":\"%s\",\"s\":\"%s\",\"p\":%s}";
+
+static char *const payload_template = "{\"r\":%u,\"g\":%u,\"b\":%u,\"s\":%1u,\"la\":\"%f\",\"lo\":\"%f\",\"ba\":%u,\"lp\":%u,\"e\":%u}";
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
@@ -196,9 +199,11 @@ int main(void) {
 
     // payload structure to be signed
     // Example: '{"r":44,"g":33,"b":22,"s":0,"lat":"12.475886","lon":"51.505264","bat":100,"lps":99999}'
-    char payload[128];
-    sprintf(payload,
-            "{\"r\":%u,\"g\":%u,\"b\":%u,\"s\":%1u,\"la\":\"%f\",\"lo\":\"%f\",\"ba\":%u,\"lp\":%u,\"e\":%u}",
+    int payload_size = snprintf(NULL, 0, payload_template,
+                                rgb.red, rgb.green, rgb.blue, sensitivity == ISL_MODE_375LUX ? 0 : 1,
+                                lat, lon, level, loop_counter, error_flag);
+    char payload[payload_size];
+    sprintf(payload, payload_template,
             rgb.red, rgb.green, rgb.blue, sensitivity == ISL_MODE_375LUX ? 0 : 1,
             lat, lon, level, loop_counter, error_flag);
 
@@ -214,12 +219,9 @@ int main(void) {
     PRINTF("AUTH     : %s\r\n", auth_hash);
     PRINTF("SIGNATURE: %s\r\n", payload_hash);
 
-    int message_size = snprintf(NULL, 0,
-                                "{\"v\":\"0.0.1\",\"a\":\"%s\",\"k\":\"%s\",\"s\":\"%s\",\"p\":%s}",
-                                auth_hash, pub_key_hash, payload_hash, payload);
+    int message_size = snprintf(NULL, 0, message_template, auth_hash, pub_key_hash, payload_hash, payload);
     char message[message_size + 1];
-    sprintf(message, "{\"v\":\"0.0.1\",\"a\":\"%s\",\"k\":\"%s\",\"s\":\"%s\",\"p\":%s}",
-            auth_hash, pub_key_hash, payload_hash, payload);
+    sprintf(message, message_template, auth_hash, pub_key_hash, payload_hash, payload);
 
     // free hashes
     free(auth_hash);
@@ -241,7 +243,8 @@ int main(void) {
 
     uint8_t buffer[response_size];
     sim800h_http_read(buffer, 0, response_size, 2 * TIMEOUT);
-    dbg_dump("GSM", buffer, response_size);
+    if(buffer[0] == '{') PRINTF("%s\r\n", buffer);
+    else dbg_dump("GSM", buffer, response_size);
 
     // switch off GSM module
     sim800h_disable();

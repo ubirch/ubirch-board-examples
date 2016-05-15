@@ -2,6 +2,3 @@
 	path = libs/wolfssl
 	url = git@github.com:ubirch/wolfssl.git
 	branch = kinetis-sdk-2.0
-[submodule "libs/firmware"]
-	path = libs/firmware
-	url = git@github.com:ubirch/firmware.git
