@@ -1,25 +1,7 @@
-# ubirch #1 (r0.2) firmware playground
-
-This repository contains the firmware implementation for our own board. The toolchain
-is built in a way so it may also run on other boards, like the [FRDM-K82F](http://www.nxp.com/products/software-and-tools/run-time-software/kinetis-software-and-tools/ides-for-kinetis-mcus/freescale-freedom-development-platform-for-kinetis-k82-k81-and-k80-mcus:FRDM-K82F)
-or the [FRDM-KL82Z](http://www.nxp.com/products/software-and-tools/hardware-development-tools/freedom-development-boards/freedom-development-board-for-kinetis-ultra-low-power-kl82-mcus:FRDM-KL82Z?fsrch=1&sr=1&pageNum=1)*.
-You will have to select the specific board when running ```cmake``` (see below).
-
-See the board specific, including pin settings found here:
-
-* [ubirch#1 r0.2](src/board/ubirch1r02)
-* [FRDM-K82F](src/board/frdm_k82f)
-* [FRDM-KL82Z](src/board/frdm_kl82z)\*
-
-> \* Work in progress, the Kinetis SDK 2.0 is not available for the K82Z.
-
-## Code checkout:
-
-The following code will ensure that the [firmware](https://github.com/ubirch/firmware) repository as well as the [wolfssl](https://github.com/ubirch/wolfssl)
-repository are checked out as submodules in ```libs```.
+# ubirch #1 (r0.2) example code
 
 ```
-git clone --recursive git@github.com:ubirch/ubirch2-board.git
+git clone git@gitlab.com:ubirch/ubirch-board-examples.git
 ```
 
 The K82F chip documentation can be found here:
@@ -27,13 +9,6 @@ The K82F chip documentation can be found here:
 
 All other documentation and examples can be obtained from the [Kinetis SDK 2.0](http://kex.freescale.com/en/).
 You will need to select the chip and minimal features before downloading.
-
-Link the KSDK 2.0 into the libs directory:
-
-```
-cd libs
-ln -sf $KSDKDIR SDK_2.0_MK82FN256xxx15
-```
 
 ## Running, flashing and debugging
 

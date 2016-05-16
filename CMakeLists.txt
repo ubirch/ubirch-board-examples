@@ -8,29 +8,22 @@ if (NOT BOARD)
   set(BOARD "FRDM-K82F")
 #  set(BOARD "FRDM-KL82Z")
 endif ()
+
 message(STATUS "selected board: ${BOARD}")
+if (BOARD MATCHES "ubirch#1|FRDM-K82F")
+  set(MCU "MK82F25615")
+elseif (BOARD MATCHES "FRDM-KL82Z")
+  set(MCU "MKL82Z7")
+endif ()
 
 project(ubirch-board C CXX ASM)
 
-find_package(KinetisSDK 2.0 REQUIRED)
-find_package(wolfSSL 3.9.0 REQUIRED)
-
-message(STATUS "Kinetis SDK: ${KinetisSDK_DIR}")
-message(STATUS "wolfSSL: ${wolfSSL_DIR}")
-
-add_definitions(-DNCIODEBUG)
+require(PACKAGE ubirch-firmware MCU ${MCU} VERSION 1.0 BUILD_TYPE ${CMAKE_BUILD_TYPE})
+require(PACKAGE KinetisSDK MCU ${MCU} VERSION 2.0 BUILD_TYPE MinSizeRel)
+require(PACKAGE wolfSSL MCU ${MCU} VERSION 3.9.0 BUILD_TYPE RelWithDebInfo)
 
 # include special libs
 include(cmake/Libraries/flashutil.cmake)
 
-# board specific code (pins, peripherals etc.)
-add_subdirectory(src/board)
-
-# ubirch driver code
-# we need to add the include directory here, so it does not get
-# lost in the nested scope of add_subdirectory()
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/driver)
-add_subdirectory(src/driver)
-
 # example code
-add_subdirectory(src/examples)
+add_subdirectory(src)

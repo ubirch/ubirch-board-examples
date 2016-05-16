@@ -1,8 +1,0 @@
-add_subdirectory(ubirch/crypto)
-add_subdirectory(ubirch/dbgutil)
-add_subdirectory(ubirch/i2c)
-add_subdirectory(ubirch/isl29125)
-add_subdirectory(ubirch/rtc)
-add_subdirectory(ubirch/ssd1306)
-add_subdirectory(ubirch/sim800h)
-add_subdirectory(ubirch/timer)
