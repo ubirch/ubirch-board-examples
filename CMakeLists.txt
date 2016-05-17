@@ -18,9 +18,9 @@ endif ()
 
 project(ubirch-board C CXX ASM)
 
-require(PACKAGE ubirch-firmware MCU ${MCU} VERSION 1.0 BUILD_TYPE ${CMAKE_BUILD_TYPE})
-require(PACKAGE KinetisSDK MCU ${MCU} VERSION 2.0 BUILD_TYPE MinSizeRel)
-require(PACKAGE wolfSSL MCU ${MCU} VERSION 3.9.0 BUILD_TYPE RelWithDebInfo)
+require(PACKAGE ubirch-firmware MCU ${MCU} VERSION 1.0)
+require(PACKAGE KinetisSDK MCU ${MCU} VERSION 2.0)
+require(PACKAGE wolfSSL MCU ${MCU} VERSION 3.9.0)
 
 # include special libs
 include(cmake/Libraries/flashutil.cmake)
