@@ -1,5 +1,5 @@
 add_executable(gsm_console main.c)
-target_link_libraries(gsm_console board firmware)
+target_link_libraries(gsm_console ubirch::${MCU}::firmware)
 prepare_flash(gsm_console)
 
 # copy the config.h.template to config.h in case it is not there; it is ignored by .git!
