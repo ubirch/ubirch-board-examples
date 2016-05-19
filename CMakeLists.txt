@@ -9,16 +9,9 @@ if (NOT BOARD)
 #  set(BOARD "FRDM-KL82Z")
 endif ()
 
-message(STATUS "selected board: ${BOARD}")
-if (BOARD MATCHES "ubirch-11|FRDM-K82F")
-  set(MCU "MK82F25615")
-elseif (BOARD MATCHES "FRDM-KL82Z")
-  set(MCU "MKL82Z7")
-endif ()
-
 project(ubirch-board C CXX ASM)
 
-require(PACKAGE ubirch MCU ${MCU} VERSION 1.0)
+require(PACKAGE ubirch BOARD ${BOARD} VERSION 1.0)
 
 # include special libs
 include(cmake/Libraries/flashutil.cmake)
