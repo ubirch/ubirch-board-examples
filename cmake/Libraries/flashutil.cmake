@@ -27,6 +27,13 @@ macro(prepare_flash NAME)
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG}  -Xlinker -Map=${NAME}.map")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Xlinker -Map=${NAME}.map")
 
+  if (ARM_NONE_EABI_SIZE)
+    add_custom_command(
+      TARGET ${NAME} POST_BUILD
+      COMMAND ${ARM_NONE_EABI_SIZE} $<TARGET_FILE_DIR:${NAME}>/${NAME}.elf
+    )
+  endif ()
+
   if (BOARD MATCHES "ubirch-1")
     # create special target that directly flashes
     add_custom_target(${NAME}-flash
