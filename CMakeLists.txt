@@ -13,8 +13,5 @@ project(ubirch-board C CXX ASM)
 
 require(PACKAGE ubirch BOARD ${BOARD} VERSION 1.0 BUILD_TYPE Release)
 
-# include special libs
-include(cmake/Libraries/flashutil.cmake)
-
 # example code
 add_subdirectory(src)
