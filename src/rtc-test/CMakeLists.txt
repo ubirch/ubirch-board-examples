@@ -1,6 +1,6 @@
 add_executable(rtc-test main.c)
 target_link_libraries(rtc-test ubirch::${BOARD}::firmware)
-prepare_flash(rtc-test)
+prepare_flash(TARGET rtc-test)
 
 # copy the config.h.template to config.h in case it is not there; it is ignored by .git!
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config.h")

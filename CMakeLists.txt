@@ -10,6 +10,7 @@ if (NOT BOARD)
 endif ()
 
 project(ubirch-board C CXX ASM)
+add_definitions(-D_GNU_SOURCE)
 
 require(PACKAGE ubirch BOARD ${BOARD} VERSION 1.0 BUILD_TYPE Release)
 
