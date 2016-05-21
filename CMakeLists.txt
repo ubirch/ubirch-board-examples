@@ -4,8 +4,8 @@ set(CMAKE_TOOLCHAIN_FILE ../ubirch-meta/ubirch-arm-toolchain/cmake/ubirch-arm-gc
 # set board type (ubirch1r02, FRDM-K82F, FRDM-KL82Z*) - * not yet implemented
 # you don't need to set it here, use 'cmake -DBOARD=<board> ..' during setup
 if (NOT BOARD)
-#  set(BOARD "ubirch1r02")
-  set(BOARD "FRDM-K82F")
+  set(BOARD "ubirch1r02")
+#  set(BOARD "FRDM-K82F")
 #  set(BOARD "FRDM-KL82Z")
 endif ()
 
