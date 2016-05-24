@@ -24,7 +24,7 @@
 #include <stdbool.h>
 #include <board.h>
 #include <stdio.h>
-#include <ubirch/crypto.h>
+#include <ubirch/crypto/crypto.h>
 
 const char *plaintext = "We love things.\n0a1b2c3d4e5f6g7h8i9j-UBIRCH\n";
 
@@ -55,7 +55,7 @@ int main(void) {
   uc_ecc_create_key(&key);
 
   PRINTF("export public key as PKCS#8 structure\r\n");
-  uc_ed25519_pkcs8 pkcs8;
+  uc_ed25519_pub_pkcs8 pkcs8;
   uc_ecc_export_pub(&key, &pkcs8);
 
   PRINTF("create signature from plaintext\r\n");
