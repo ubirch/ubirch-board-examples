@@ -1,10 +1,8 @@
-message(WARNING ${USB_MIDDLEWARE_SRCS})
 foreach (usb_file ${USB_MIDDLEWARE_SRCS})
   if (usb_file MATCHES "_host_")
     list(REMOVE_ITEM USB_MIDDLEWARE_SRCS ${usb_file})
   endif ()
 endforeach ()
-message(WARNING ${USB_MIDDLEWARE_SRCS})
 add_executable(usb-hid
   hid_generic.c
   usb_device_ch9.c
