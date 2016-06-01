@@ -1,4 +1,4 @@
-# ubirch #1 (r0.2) example code
+# ubirch firmware example code
 
 ```
 git clone git@github.com:ubirch/ubirch-board-examples.git
@@ -14,7 +14,9 @@ You will need to select the chip and minimal features before downloading.
 
 Install the arm toolchain gcc and cmake:
 ```
-brew install gcc-arm-none-eabi-49 cmake cgdb
+brew tap armmbed/formulae
+brew install arm-none-eabi-gcc
+brew install cmake
 ```
 
 Also download the [SEGGER J-Link Debugger](https://www.segger.com/jlink-software.html) for the JLinkGDBServer.
