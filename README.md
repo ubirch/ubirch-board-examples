@@ -107,12 +107,16 @@ are still there.
   Initialized an SSD1306 based OLED display and lets you enter characters via the
   debug console which are then displayed on the OLED.
 
+* ```src/examples/oled-fractal``` - display a fractal on the oled display
+
+  Example how to address individual pixels on the OLED display.
+
 * ```src/examples/rgbsensor``` - read RGB sensor data
 
   Initialized the ISL29125 RGB sensor via I2C and prints RGB information on the
   debug console.
 
-* ```src/examples/rtc``` - Real Time Clock
+* ```src/examples/rtc-test``` - Real Time Clock
 
   Compiles the Realtime clock example from KSDK 2.0. Shows how the RTC works.
 
@@ -120,6 +124,19 @@ are still there.
 
   Just a simple test that lets the on-board LED blink and echos characters back that you
   type into the debug console.
+
+* ```src/examples/timer-test``` - test the timer functions
+
+  Tests how the delay works.
+
+* ```src/examples/ubirch-crypto``` - how to use the ubirch crypto api
+
+  Simple test of how to use the crypto api layer.
+
+* ```src/examples/usb-hid``` - Kinetis SDK example for a USB HID
+
+  Shows how to use the SDKs USB middleware.
+
 
 * ```src/examples/wolfssl-test-*``` - wolfSSL test code
 
