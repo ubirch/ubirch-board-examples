@@ -1,7 +1,7 @@
 # ubirch #1 (r0.2) example code
 
 ```
-git clone git@gitlab.com:ubirch/ubirch-board-examples.git
+git clone git@github.com:ubirch/ubirch-board-examples.git
 ```
 
 The K82F chip documentation can be found here:
