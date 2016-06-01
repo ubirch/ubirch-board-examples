@@ -28,6 +28,13 @@ void SysTick_Handler() {
 
 uint8_t buffer[64 * 6];
 
+void putpixel(int column, int row, int color) {
+  if (color) {
+    *(buffer + (row / 8) * 64 + column) |= (uint8_t) (1 << (row % 8));
+  } else {
+    *(buffer + (row / 8) * 64 + column) &= (uint8_t) ~(1 << (row % 8));
+  }
+}
 
 void oled_putc(int row, int column, char c) {
   if (c >= 'A' && c <= 'Z') {
@@ -86,37 +93,34 @@ int main(void) {
   memset(buffer, 0x00, 64 * 6);
   ssd1306_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
 
-  int row = 0, column = 0;
-  oled_invert(row, column);
+  while(1) {
+    int width = 48, height = 64;
+    int max = 50;
+    int black = 0, white = 1;
 
-  // write all characters read from the debug console
-  // to the display and move cursor forward, wraps at the
-  // display boundary (8x6)
-  // stops when escape is pressed
-  char c;
-  do {
-    c = (uint8_t) toupper(GETCHAR());
-    oled_invert(row, column);
-    switch (c) {
-      case '\r':
-      case '\n':
-        column = -1;
-            row++;
-            break;
-      case ' ':
-        break;
-      default:
-        oled_putc(row, column, c);
-            break;
-    }
-    if (++column > 7) {
-      column = 0;
-      row++;
-    }
-    if (row > 5) row = 0;
-    oled_invert(row, column);
-  } while (c != '\e');
 
+    for (int i = 1; i < max; i++) {
+      for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+          double c_re = (col - width / 2.0) * 4.0 / width;
+          double c_im = (row - height / 2.0) * 4.0 / height;
+          double x = 0, y = 0;
+          int iteration = 0;
+          while (x * x + y * y <= 4 && iteration < i) {
+            double x_new = x * x - y * y + c_re;
+            y = 2 * x * y + c_im;
+            x = x_new;
+            iteration++;
+          }
+          if (iteration < i) putpixel(row, col, black);
+          else putpixel(row, col, white);
+        }
+      }
+      ssd1306_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
+      delay(100);
+    }
+
+  }
   PRINTF("DONE\r\n");
   return 0;
 }
