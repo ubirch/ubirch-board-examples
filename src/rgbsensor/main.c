@@ -119,7 +119,7 @@ int main(void) {
     delay(100);
   }
 
-  I2C_MasterDeinit(I2C2);
+  I2C_MasterDeinit(BOARD_I2C);
 
   return 0;
 

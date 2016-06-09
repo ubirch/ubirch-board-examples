@@ -16,6 +16,7 @@ void alarm(rtc_datetime_t *date) {
 int main(void) {
   board_init();
   board_console_init(BOARD_DEBUG_BAUD);
+  INTMUX_EnableInterrupt(INTMUX0, 0, RTC_Alarm_IRQn);
 
   rtc_datetime_t date = (rtc_datetime_t) {2016, 05, 07, 22, 18, 22};
 
