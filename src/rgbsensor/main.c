@@ -25,8 +25,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <board.h>
-#include <ubirch/isl29125.h>
 #include <ubirch/i2c.h>
+#include <ubirch/i2c/isl29125.h>
 #include <ubirch/timer.h>
 
 #define ISL_375LUX_MAX 65000

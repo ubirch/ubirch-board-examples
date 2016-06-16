@@ -5,7 +5,7 @@
 #include <board.h>
 #include <ubirch/i2c.h>
 #include <ubirch/timer.h>
-#include <ubirch/ssd1306.h>
+#include <ubirch/i2c/ssd1306.h>
 #include "font5x5.h"
 
 const i2c_config_t i2c_config = {
