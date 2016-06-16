@@ -16,7 +16,6 @@ void alarm(rtc_datetime_t *date) {
 int main(void) {
   board_init();
   board_console_init(BOARD_DEBUG_BAUD);
-  INTMUX_EnableInterrupt(INTMUX0, 0, RTC_Alarm_IRQn);
 
   rtc_datetime_t date = (rtc_datetime_t) {2016, 05, 07, 22, 18, 22};
 
@@ -28,7 +27,7 @@ int main(void) {
     sim800h_gprs_attach(RTC_TEST_APN, RTC_TEST_USER, RTC_TEST_PWD, 30000);
 
     status_t loc_status, bat_status;
-    short int bat_level;
+    int bat_level;
     int bat_voltage;
     double lon, lat;
 

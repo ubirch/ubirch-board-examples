@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <board.h>
 #include <ubirch/timer.h>
+#include <stdlib.h>
+#include <fsl_pit.h>
 
 void SysTick_Handler() {
   static uint32_t counter = 0;
@@ -45,12 +47,23 @@ int main(void) {
   PRINTF("BOARD TEST\r\n");
   SysTick_Config(BOARD_SYSTICK_100MS);
 
-  while(1) {
+
+  timer_set_timeout(10000000);
+  while (true) {
+    PRINTF("\e[K%10lu %10lu %10lu %10lu\r",
+           (PIT_GetCurrentTimerCount(PIT, kPIT_Chnl_0)),
+           (PIT_GetCurrentTimerCount(PIT, kPIT_Chnl_1)),
+           (PIT_GetCurrentTimerCount(PIT, kPIT_Chnl_2)),
+           (PIT_GetCurrentTimerCount(PIT, kPIT_Chnl_3)));
+    for(uint32_t n = 1000000; n > 0; n--);
+  }
+
+  while (1) {
     uint32_t start = timer_read();
     delay(10000);
     uint32_t end = timer_read();
 
-    PRINTF("%lu-%lu = %lu\r\n", end, start, (end-start) / 1000);
+    PRINTF("%lu-%lu = %lu\r\n", end, start, (end - start) / 1000);
   }
 
 }

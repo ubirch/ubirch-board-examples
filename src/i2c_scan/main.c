@@ -37,7 +37,7 @@ static const i2c_config_t i2c_config = {
   .port_clock = BOARD_I2C_PORT_CLOCK,
   .SCL = BOARD_I2C_SCL_PIN,
   .SDA = BOARD_I2C_SDA_PIN,
-  .baud = I2C_FULL_SPEED
+  .baud = I2C_STANDARD
 };
 
 void SysTick_Handler() {
@@ -82,7 +82,7 @@ int main(void) {
           PRINTF("ERROR %0d\r", status);
               break;
       }
-      delay(1);
+      delay(100);
     }
 
     i2c_deinit();
