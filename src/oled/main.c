@@ -6,13 +6,13 @@
 #include <ubirch/i2c.h>
 #include <ubirch/timer.h>
 #include <ubirch/i2c/ssd1306.h>
-#include "font5x5.h"
+#include "ugui/ugui.h"
 
 const i2c_config_t i2c_config = {
+  .i2c = BOARD_I2C,
   .port = BOARD_I2C_PORT,
   .mux = BOARD_I2C_ALT,
   .port_clock = BOARD_I2C_PORT_CLOCK,
-  .i2c = BOARD_I2C,
   .i2c_clock = BOARD_I2C_CLOCK,
   .SCL = BOARD_I2C_SCL_PIN,
   .SDA = BOARD_I2C_SDA_PIN,
@@ -28,18 +28,12 @@ void SysTick_Handler() {
 
 uint8_t buffer[64 * 6];
 
-
-void oled_putc(int row, int column, char c) {
-  if (c >= 'A' && c <= 'Z') {
-    memcpy(buffer + row * 64 + column * 8 + 1, font5x5_abc + (c - 'A') * 5, 5);
+void putpixel(int column, int row, int color) {
+  if (color) {
+    *(buffer + (row / 8) * 64 + column) |= (uint8_t) (1 << (row % 8));
   } else {
-    memcpy(buffer + row * 64 + column * 8 + 1, &font5x5_extra[20 * 5], 5);
+    *(buffer + (row / 8) * 64 + column) &= (uint8_t) ~(1 << (row % 8));
   }
-}
-
-void oled_invert(int row, int column) {
-  for (int b = 0; b < 7; b++) buffer[row * 64 + column * 8 + b] = ~buffer[row * 64 + column * 8 + b];
-  ssd1306_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
 }
 
 int main(void) {
@@ -55,8 +49,8 @@ int main(void) {
 
   // enable reset pin clock, mux as GPIO and reset oled display
   CLOCK_EnableClock(kCLOCK_PortB);
-  PORT_SetPinMux(PORTB, 9, kPORT_MuxAsGpio);
-  ssd1306_reset(GPIOB, 9);
+  PORT_SetPinMux(PORTB, 2, kPORT_MuxAsGpio);
+  ssd1306_reset(GPIOB, 2);
 
   delay(1);
 
@@ -83,39 +77,36 @@ int main(void) {
   ssd1306_cmd(OLED_DEVICE_ADDRESS, 0x20);
   ssd1306_cmd(OLED_DEVICE_ADDRESS, 0x20 + 63);
 
-  memset(buffer, 0x00, 64 * 6);
-  ssd1306_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
+  UG_GUI gui;
+  UG_Init(&gui, (void (*)(UG_S16, UG_S16, UG_COLOR)) putpixel, 64, 6 * 8);
+  UG_FontSelect(&FONT_6X8);
+  UG_ConsoleSetArea(0, 0, 63, 6 * 8 - 1);
+  UG_ConsoleSetForecolor(C_WHITE);
+  UG_ConsoleSetBackcolor(C_BLACK);
 
-  int row = 0, column = 0;
-  oled_invert(row, column);
+  UG_ConsolePutString("Hello World!\n");
+  ssd1306_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
 
   // write all characters read from the debug console
   // to the display and move cursor forward, wraps at the
   // display boundary (8x6)
   // stops when escape is pressed
-  char c;
+  char c[2] = {0, 0};
   do {
-    c = (uint8_t) toupper(GETCHAR());
-    oled_invert(row, column);
-    switch (c) {
-      case '\r':
+    c[0] = (uint8_t) GETCHAR();
+    switch (c[0]) {
       case '\n':
-        column = -1;
-            row++;
-            break;
-      case ' ':
+      case '\r': {
+        c[0] = '\n';
         break;
-      default:
-        oled_putc(row, column, c);
-            break;
+      }
+      default: {
+        UG_ConsolePutString(c);
+        ssd1306_data(OLED_DEVICE_ADDRESS, buffer, 64 * 6);
+        break;
+      }
     }
-    if (++column > 7) {
-      column = 0;
-      row++;
-    }
-    if (row > 5) row = 0;
-    oled_invert(row, column);
-  } while (c != '\e');
+  } while (c[0] != '\e');
 
   PRINTF("DONE\r\n");
   return 0;
