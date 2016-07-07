@@ -29,7 +29,7 @@ void SysTick_Handler() {
 uint8_t buffer[64 * 6];
 
 void putpixel(int column, int row, int color) {
-  if (color) {
+  if (color != C_BLACK) {
     *(buffer + (row / 8) * 64 + column) |= (uint8_t) (1 << (row % 8));
   } else {
     *(buffer + (row / 8) * 64 + column) &= (uint8_t) ~(1 << (row % 8));

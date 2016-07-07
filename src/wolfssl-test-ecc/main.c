@@ -87,13 +87,15 @@ int init_trng() {
 }
 
 int init_board_key(unsigned int size) {
-/*
+
   PRINTF("- generating board private key (please wait)\r\n");
   wc_ed25519_init(&board_ecc_key);
   int r = wc_ed25519_make_key(&rng, size, &board_ecc_key);
-  */
+  PRINTF("-- GENERATED BOARD KEY\r\n");
+  print_private_key(&board_ecc_key);
+
   wc_ed25519_init(&board_ecc_key);
-  int r = wc_ed25519_import_private_key(device_ecc_key, ED25519_KEY_SIZE,
+  r = wc_ed25519_import_private_key(device_ecc_key, ED25519_KEY_SIZE,
                                         device_ecc_key + 32, ED25519_PUB_KEY_SIZE,
                                         &board_ecc_key);
   if (r != 0) return r;
