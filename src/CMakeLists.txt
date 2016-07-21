@@ -1,4 +1,5 @@
 add_subdirectory(flash)
+add_subdirectory(ftm)
 add_subdirectory(gsm_commands)
 add_subdirectory(gsm_console)
 add_subdirectory(i2c_scan)

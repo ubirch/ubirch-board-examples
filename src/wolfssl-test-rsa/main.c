@@ -31,6 +31,7 @@
 #include <drivers/fsl_trng.h>
 #include <wolfssl/wolfcrypt/rsa.h>
 #include <wolfssl/wolfcrypt/signature.h>
+#include <fsl_ltc.h>
 #include "public_key.h"
 
 static const char plaintext[] = "We love things.\n0a1b2c3d4e5f6g7h8i9j-UBIRCH\n";
@@ -62,6 +63,16 @@ void error(char *message) {
 WC_RNG rng;
 RsaKey board_rsa_key;
 RsaKey recipient_public_key;
+
+int init_ltc() {
+#if !FSL_FEATURE_SOC_LTC_COUNT
+  PRINTF("- no LTC available\r\n");
+  return 1;
+#else
+  LTC_Init(LTC0);
+  return 0;
+#endif
+}
 
 int init_trng() {
   PRINTF("- initializing random number generator\r\n");
@@ -97,6 +108,7 @@ int main(void) {
   SysTick_Config(SystemCoreClock / 100 - 1);
 
   PRINTF("ubirch #1 r0.2 RSA encryption/signature test\r\n");
+  if (init_ltc() != 0) PRINTF("No LTC, may crash\r\n");
   if (init_trng() != 0) error("failed to initialize TRNG");
   if (init_board_key(2048) != 0) error("failed to generate key pair");
   if (init_recipient_public_key(test_der, test_der_len)) error("failed to load recipient public key");

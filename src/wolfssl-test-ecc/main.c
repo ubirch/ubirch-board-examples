@@ -31,6 +31,7 @@
 #include <wolfssl/wolfcrypt/signature.h>
 #include <wolfssl/wolfcrypt/ed25519.h>
 #include <ubirch/dbgutil.h>
+#include <fsl_ltc.h>
 
 #include "ecc_keys.h"
 
@@ -77,6 +78,16 @@ WC_RNG rng;
 ed25519_key board_ecc_key;
 ed25519_key recipient_public_key;
 
+int init_ltc() {
+#if !FSL_FEATURE_SOC_LTC_COUNT
+  PRINTF("- no LTC available\r\n");
+  return 1;
+#else
+  LTC_Init(LTC0);
+  return 0;
+#endif
+}
+
 int init_trng() {
   PRINTF("- initializing random number generator\r\n");
   trng_config_t trngConfig;
@@ -121,6 +132,7 @@ int main(void) {
   SysTick_Config(BOARD_SYSTICK_100MS);
 
   PRINTF("ubirch #1 ECC encryption/signature test\r\n");
+  if (init_ltc() != 0) PRINTF("No LTC, may crash\r\n");
   if (init_trng() != 0) error("failed to initialize TRNG");
   if (init_board_key(ED25519_KEY_SIZE) != 0) error("failed to generate key pair");
   if (init_recipient_public_key(recipient_key, recpient_key_len)) error("failed to load recipient public key");

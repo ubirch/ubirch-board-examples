@@ -33,6 +33,7 @@
 #include <wolfssl/wolfcrypt/signature.h>
 #include <wolfssl/wolfcrypt/ed25519.h>
 #include <ubirch/timer.h>
+#include <fsl_ltc.h>
 
 #define BENCHMARK_LOOPS 5
 
@@ -219,38 +220,37 @@ int agreeTimes = 1000;
 #define current_time(n) timer_read()
 
 #ifdef HAVE_ED25519
-void bench_ed25519KeyGen(void)
-{
+
+void bench_ed25519KeyGen(void) {
   ed25519_key genKey;
   double start, total, milliEach;
-  int    i;
+  int i;
 
   /* 256 bit */
   start = current_time(1);
 
-  for(i = 0; i < genTimes; i++) {
+  for (i = 0; i < genTimes; i++) {
     wc_ed25519_init(&genKey);
     wc_ed25519_make_key(&rng, 32, &genKey);
     wc_ed25519_free(&genKey);
   }
 
   total = current_time(0) - start;
-  milliEach  = total / genTimes / 1000;
+  milliEach = total / genTimes / 1000;
   printf("\r\n");
   printf("ED25519  key generation  %6.3f milliseconds, avg over %d"
            " iterations\r\n", milliEach, genTimes);
 }
 
 
-void bench_ed25519KeySign(void)
-{
-  int    ret;
+void bench_ed25519KeySign(void) {
+  int ret;
   ed25519_key genKey;
 #ifdef HAVE_ED25519_SIGN
   double start, total, milliEach;
-  int    i;
-  byte   sig[ED25519_SIG_SIZE];
-  byte   msg[512];
+  int i;
+  byte sig[ED25519_SIG_SIZE];
+  byte msg[512];
   word32 x = 0;
 #endif
 
@@ -264,12 +264,12 @@ void bench_ed25519KeySign(void)
 
 #ifdef HAVE_ED25519_SIGN
   /* make dummy msg */
-  for (i = 0; i < (int)sizeof(msg); i++)
-    msg[i] = (byte)i;
+  for (i = 0; i < (int) sizeof(msg); i++)
+    msg[i] = (byte) i;
 
   start = current_time(1);
 
-  for(i = 0; i < agreeTimes; i++) {
+  for (i = 0; i < agreeTimes; i++) {
     x = sizeof(sig);
     ret = wc_ed25519_sign_msg(msg, sizeof(msg), sig, &x, &genKey);
     if (ret != 0) {
@@ -279,14 +279,14 @@ void bench_ed25519KeySign(void)
   }
 
   total = current_time(0) - start;
-  milliEach  = total / agreeTimes / 1000;  /* per second  */
+  milliEach = total / agreeTimes / 1000;  /* per second  */
   printf("ED25519  sign   time     %6.3f milliseconds, avg over %d"
            " iterations\r\n", milliEach, agreeTimes);
 
 #ifdef HAVE_ED25519_VERIFY
   start = current_time(1);
 
-  for(i = 0; i < agreeTimes; i++) {
+  for (i = 0; i < agreeTimes; i++) {
     int verify = 0;
     ret = wc_ed25519_verify_msg(sig, x, msg, sizeof(msg), &verify,
                                 &genKey);
@@ -297,7 +297,7 @@ void bench_ed25519KeySign(void)
   }
 
   total = current_time(0) - start;
-  milliEach  = total / agreeTimes / 1000;
+  milliEach = total / agreeTimes / 1000;
   printf("ED25519  verify time     %6.3f milliseconds, avg over %d"
            " iterations\r\n", milliEach, agreeTimes);
 #endif /* HAVE_ED25519_VERIFY */
@@ -305,6 +305,7 @@ void bench_ed25519KeySign(void)
 
   wc_ed25519_free(&genKey);
 }
+
 #endif /* HAVE_ED25519 */
 
 
@@ -317,8 +318,18 @@ int init_trng() {
   return r == kStatus_Success ? wc_InitRng(&rng) : r;
 }
 
+int init_ltc() {
+#if !FSL_FEATURE_SOC_LTC_COUNT
+  PRINTF("- no LTC available\r\n");
+  return 1;
+#else
+  LTC_Init(LTC0);
+  return 0;
+#endif
+}
+
 int init_board_key(unsigned int size) {
-  PRINTF("- benchmarking ED25591\r\n");
+  PRINTF("- benchmarking ED25519\r\n");
 
   bench_ed25519KeyGen();
   bench_ed25519KeySign();
@@ -354,7 +365,8 @@ int main(void) {
 
   SysTick_Config(BOARD_SYSTICK_100MS);
 
-  PRINTF("ubirch #1 r0.2 RSA encryption/signature benchmark\r\n");
+  PRINTF("ubirch #1 r0.2 RSA/ECC encryption/signature benchmark\r\n");
+  if (init_ltc() != 0) PRINTF("No LTC, may crash\r\n");
   if (init_trng() != 0) error("failed to initialize TRNG");
   if (init_board_key(2048) != 0) error("failed to generate key pair");
   if (init_recipient_public_key(recipient_pubkey, recipient_pubkey_length))
@@ -370,7 +382,7 @@ int main(void) {
   uint32_t total = 0;
   int signatureLength = 0;
   byte *signature = NULL;
-  for(int i = 0; i < BENCHMARK_LOOPS; i++) {
+  for (int i = 0; i < BENCHMARK_LOOPS; i++) {
     const uint32_t start = timer_read();
     signatureLength = wc_SignatureGetSize(WC_SIGNATURE_TYPE_RSA, &board_rsa_key, sizeof(board_rsa_key));
     signature = malloc((size_t) signatureLength);
@@ -389,17 +401,17 @@ int main(void) {
     sprintf(loop_str, "%d", i);
     timestamp(loop_str, elapsed);
   }
-  timestamp("Average:", total / BENCHMARK_LOOPS / 1000);
+  timestamp("Average:", total / BENCHMARK_LOOPS);
   PRINTF("-- SIGNATURE\r\n");
 
   PRINTF("- encrypting message\r\n");
 
   total = 0;
   int r = -1;
-  for(int i = 0; i < BENCHMARK_LOOPS; i++) {
+  for (int i = 0; i < BENCHMARK_LOOPS; i++) {
     const uint32_t start = timer_read();
     r = wc_RsaPublicEncrypt((const byte *) plaintext, plaintextLength, cipher, cipherLength, &recipient_public_key,
-                              &rng);
+                            &rng);
     if (r < 0) error("failed to encrypt message");
 
     const uint32_t elapsed = timer_read() - start;
@@ -408,7 +420,7 @@ int main(void) {
     sprintf(loop_str, "%d", i);
     timestamp(loop_str, elapsed);
   }
-  timestamp("Average:", total / BENCHMARK_LOOPS / 1000);
+  timestamp("Average:", total / BENCHMARK_LOOPS);
   PRINTF("-- CIPHER (%d bytes)\r\n", r);
 
   wc_FreeRsaKey(&board_rsa_key);
