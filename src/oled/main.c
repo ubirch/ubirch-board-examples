@@ -8,18 +8,6 @@
 #include <ubirch/i2c/ssd1306.h>
 #include "ugui/ugui.h"
 
-const i2c_config_t i2c_config = {
-  .i2c = BOARD_I2C,
-  .port = BOARD_I2C_PORT,
-  .mux = BOARD_I2C_ALT,
-  .port_clock = BOARD_I2C_PORT_CLOCK,
-  .i2c_clock = BOARD_I2C_CLOCK,
-  .SCL = BOARD_I2C_SCL_PIN,
-  .SDA = BOARD_I2C_SDA_PIN,
-  .baud = I2C_FAST_MODE
-};
-
-
 void SysTick_Handler() {
   static uint32_t counter = 0;
   counter++;
@@ -45,7 +33,7 @@ int main(void) {
   PRINTF("\r\n-- SSD1306 test\r\n");
 
   // initialize i2c
-  i2c_init(i2c_config);
+  i2c_init(&i2c_config_default);
 
   // enable reset pin clock, mux as GPIO and reset oled display
   CLOCK_EnableClock(kCLOCK_PortB);

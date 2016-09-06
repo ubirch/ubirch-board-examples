@@ -30,7 +30,7 @@
 #include <ubirch/i2c.h>
 #include <ubirch/timer.h>
 
-static const i2c_config_t i2c_config = {
+static i2c_config_t i2c_config = {
   .i2c = BOARD_I2C,
   .port = BOARD_I2C_PORT,
   .mux = BOARD_I2C_ALT,
@@ -53,7 +53,7 @@ int main(void) {
   SysTick_Config(BOARD_SYSTICK_100MS);
 
   while (true) {
-    i2c_init(i2c_config);
+    i2c_init(&i2c_config);
 
     for (uint8_t address = 0x01; address <= 0x7f; address++) {
       PRINTF("Scanning for device 0x%02x: \e[K", address);

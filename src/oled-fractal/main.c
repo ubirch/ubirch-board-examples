@@ -7,7 +7,7 @@
 #include <ubirch/i2c/ssd1306.h>
 #include "font5x5.h"
 
-const i2c_config_t i2c_config = {
+static i2c_config_t i2c_config = {
   .port = BOARD_I2C_PORT,
   .mux = BOARD_I2C_ALT,
   .port_clock = BOARD_I2C_PORT_CLOCK,
@@ -57,7 +57,7 @@ int main(void) {
   PRINTF("\r\n-- SSD1306 test\r\n");
 
   // initialize i2c
-  i2c_init(i2c_config);
+  i2c_init(&i2c_config);
 
   // enable reset pin clock, mux as GPIO and reset oled display
   CLOCK_EnableClock(kCLOCK_PortB);
